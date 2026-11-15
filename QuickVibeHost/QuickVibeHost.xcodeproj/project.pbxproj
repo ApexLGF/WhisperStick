@@ -1,0 +1,968 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 60;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		AA18000001 /* funasr_tpass_shim.mm in Sources */ = {isa = PBXBuildFile; fileRef = AA18000002 /* funasr_tpass_shim.mm */; };
+		C17B000100 /* Cardinal.swift in Sources */ = {isa = PBXBuildFile; fileRef = C17F000100 /* Cardinal.swift */; };
+		C17B000101 /* ChineseITN.swift in Sources */ = {isa = PBXBuildFile; fileRef = C17F000101 /* ChineseITN.swift */; };
+		C17B000102 /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = C17F000102 /* Config.swift */; };
+		C17B000103 /* DateNormalize.swift in Sources */ = {isa = PBXBuildFile; fileRef = C17F000103 /* DateNormalize.swift */; };
+		C17B000104 /* Decimal.swift in Sources */ = {isa = PBXBuildFile; fileRef = C17F000104 /* Decimal.swift */; };
+		C17B000105 /* Electronic.swift in Sources */ = {isa = PBXBuildFile; fileRef = C17F000105 /* Electronic.swift */; };
+		C17B000106 /* Fraction.swift in Sources */ = {isa = PBXBuildFile; fileRef = C17F000106 /* Fraction.swift */; };
+		C17B000107 /* Lattice.swift in Sources */ = {isa = PBXBuildFile; fileRef = C17F000107 /* Lattice.swift */; };
+		C17B000108 /* LicensePlate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C17F000108 /* LicensePlate.swift */; };
+		C17B000109 /* Math.swift in Sources */ = {isa = PBXBuildFile; fileRef = C17F000109 /* Math.swift */; };
+		C17B00010A /* Measure.swift in Sources */ = {isa = PBXBuildFile; fileRef = C17F00010A /* Measure.swift */; };
+		C17B00010B /* Money.swift in Sources */ = {isa = PBXBuildFile; fileRef = C17F00010B /* Money.swift */; };
+		C17B00010C /* RegexHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = C17F00010C /* RegexHelpers.swift */; };
+		C17B00010D /* SpecialCardinal.swift in Sources */ = {isa = PBXBuildFile; fileRef = C17F00010D /* SpecialCardinal.swift */; };
+		C17B00010E /* Tables.swift in Sources */ = {isa = PBXBuildFile; fileRef = C17F00010E /* Tables.swift */; };
+		C17B00010F /* Taggers.swift in Sources */ = {isa = PBXBuildFile; fileRef = C17F00010F /* Taggers.swift */; };
+		C17B000110 /* Time.swift in Sources */ = {isa = PBXBuildFile; fileRef = C17F000110 /* Time.swift */; };
+		C17B000111 /* Whitelist.swift in Sources */ = {isa = PBXBuildFile; fileRef = C17F000111 /* Whitelist.swift */; };
+		C17B0001FF /* ITNPostProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = C17F0001FF /* ITNPostProcessor.swift */; };
+		C17B000200 /* RecognitionPunctuationPostProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = C17F000200 /* RecognitionPunctuationPostProcessor.swift */; };
+		200A006854600753D018C975 /* FunASRSeacoEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E7946870AF47A06941E21E2 /* FunASRSeacoEngine.swift */; };
+		9C2AE53AFB5CA818FA9C2ACB /* funasr.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 941FDBE695CD788F6061B634 /* funasr.xcframework */; };
+		A1000001 /* QuickVibeHostApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000001 /* QuickVibeHostApp.swift */; };
+		A1000411 /* AppUpdateSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000411 /* AppUpdateSupport.swift */; };
+		A1000412 /* AppUpdateManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000412 /* AppUpdateManager.swift */; };
+		A1000002 /* BLEManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000002 /* BLEManager.swift */; };
+		A1000003 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000003 /* ContentView.swift */; };
+		A1000004 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A2000004 /* Assets.xcassets */; };
+		A10000A4 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = A20000A4 /* Localizable.strings */; };
+		A10000A5 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = A20000A5 /* InfoPlist.strings */; };
+		A1000400 /* LineQVMSImage.png in Resources */ = {isa = PBXBuildFile; fileRef = A2000400 /* LineQVMSImage.png */; };
+		A1000005 /* AudioCaptureManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000007 /* AudioCaptureManager.swift */; };
+		A1000006 /* DoubaoASRClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000008 /* DoubaoASRClient.swift */; };
+		A100007B /* StreamingASRSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200007B /* StreamingASRSession.swift */; };
+		A1000520 /* StreamingASRFlushPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000520 /* StreamingASRFlushPolicy.swift */; };
+		A1000007 /* KeyboardSimulator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000009 /* KeyboardSimulator.swift */; };
+		A1000130 /* DeviceActionMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000130 /* DeviceActionMode.swift */; };
+		A1000132 /* DeviceI18n.generated.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000132 /* DeviceI18n.generated.swift */; };
+		A1000133 /* AppL10n.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000133 /* AppL10n.swift */; };
+		A1000131 /* DeviceActionModeController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000131 /* DeviceActionModeController.swift */; };
+		A1000008 /* RecognitionHistoryManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200000A /* RecognitionHistoryManager.swift */; };
+		A1000009 /* ClaudeUsageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200000B /* ClaudeUsageManager.swift */; };
+		A10000F1 /* AgentProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200003C /* AgentProvider.swift */; };
+		A1000432 /* AgentBillingMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000432 /* AgentBillingMode.swift */; };
+		A1000190 /* CodexSessionMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000090 /* CodexSessionMonitor.swift */; };
+		A1000410 /* CodexRolloutEventMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000410 /* CodexRolloutEventMonitor.swift */; };
+		A1000530 /* TaskLifecycle.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000530 /* TaskLifecycle.swift */; };
+		A1000540 /* WorkBuddyDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000540 /* WorkBuddyDataSource.swift */; };
+		A1000541 /* WorkBuddySessionMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000541 /* WorkBuddySessionMonitor.swift */; };
+		A1000550 /* WorkBuddyApproval.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000550 /* WorkBuddyApproval.swift */; };
+		A1000551 /* quickvibehost-workbuddy-approval.py in Resources */ = {isa = PBXBuildFile; fileRef = A2000551 /* quickvibehost-workbuddy-approval.py */; };
+		A1000552 /* quickvibehost-workbuddy-marketplace.json in Resources */ = {isa = PBXBuildFile; fileRef = A2000552 /* quickvibehost-workbuddy-marketplace.json */; };
+		A1000553 /* quickvibehost-workbuddy-plugin.json in Resources */ = {isa = PBXBuildFile; fileRef = A2000553 /* quickvibehost-workbuddy-plugin.json */; };
+		A1000554 /* quickvibehost-workbuddy-hooks.json in Resources */ = {isa = PBXBuildFile; fileRef = A2000554 /* quickvibehost-workbuddy-hooks.json */; };
+		A1000542 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = A2000542 /* libsqlite3.tbd */; };
+		A1000134 /* ChatGPTConversationMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000134 /* ChatGPTConversationMonitor.swift */; };
+		A1000340 /* SessionLiveness.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000340 /* SessionLiveness.swift */; };
+		A1000193 /* BenchServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000193 /* BenchServer.swift */; };
+		A100000B /* ClaudeCodeSessionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200000D /* ClaudeCodeSessionManager.swift */; };
+		A100000C /* GlobalHotkeyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200000E /* GlobalHotkeyManager.swift */; };
+		A100000D /* RecordingOverlayPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200000F /* RecordingOverlayPanel.swift */; };
+		A100000E /* ADPCMDecoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000010 /* ADPCMDecoder.swift */; };
+		A100000F /* MainWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000011 /* MainWindowController.swift */; };
+		A1000010 /* StatusTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000012 /* StatusTab.swift */; };
+		A1000401 /* LocalAIUsageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000401 /* LocalAIUsageManager.swift */; };
+		A1000402 /* AIUsageOverviewSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000402 /* AIUsageOverviewSection.swift */; };
+		A1000403 /* ccusage in Embed Helpers */ = {isa = PBXBuildFile; fileRef = A2000403 /* ccusage */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		A1000404 /* CCUSAGE_LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = A2000404 /* CCUSAGE_LICENSE */; };
+		A1000405 /* TOKENREMAIN_NOTICE in Resources */ = {isa = PBXBuildFile; fileRef = A2000405 /* TOKENREMAIN_NOTICE */; };
+		A1000406 /* TOKENREMAIN_LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = A2000406 /* TOKENREMAIN_LICENSE */; };
+		A1000011 /* DeviceTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000013 /* DeviceTab.swift */; };
+		A1000012 /* SettingsTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000014 /* SettingsTab.swift */; };
+		A1000016 /* RecognitionBoost.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000016 /* RecognitionBoost.swift */; };
+		A1000017 /* ProjectHotwordProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000017 /* ProjectHotwordProvider.swift */; };
+		A1000018 /* ASRHotwordInputParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000018 /* ASRHotwordInputParser.swift */; };
+		A1000019 /* ProgrammingTextPostProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000019 /* ProgrammingTextPostProcessor.swift */; };
+		A100001A /* DeepSeekPostProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200001A /* DeepSeekPostProcessor.swift */; };
+		A1000510 /* PromptRecommendation.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000510 /* PromptRecommendation.swift */; };
+		A1000512 /* InputAssistant.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000512 /* InputAssistant.swift */; };
+		A1000511 /* BuiltInPromptTemplates.json in Resources */ = {isa = PBXBuildFile; fileRef = A2000511 /* BuiltInPromptTemplates.json */; };
+		A1000020 /* HookSocketServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000020 /* HookSocketServer.swift */; };
+		A1000021 /* ClaudeHookSessionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000021 /* ClaudeHookSessionStore.swift */; };
+		A1000022 /* HookInstaller.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000022 /* HookInstaller.swift */; };
+		A1000024 /* StatusLineInstaller.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000024 /* StatusLineInstaller.swift */; };
+		A1000023 /* vibepanel-hook.py in Resources */ = {isa = PBXBuildFile; fileRef = A2000023 /* vibepanel-hook.py */; };
+		A1000192 /* quickvibehost-codex-hook.py in Resources */ = {isa = PBXBuildFile; fileRef = A2000092 /* quickvibehost-codex-hook.py */; };
+		A1000191 /* CodexApproval.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000091 /* CodexApproval.swift */; };
+		A1000030 /* HistoryTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000030 /* HistoryTab.swift */; };
+		A1000031 /* SessionColorManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000031 /* SessionColorManager.swift */; };
+		A1000032 /* PTYWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000032 /* PTYWriter.swift */; };
+		A1000034 /* InputRoutingMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000034 /* InputRoutingMode.swift */; };
+		A1000035 /* InputRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000035 /* InputRouter.swift */; };
+		A1000036 /* SessionSelectionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000036 /* SessionSelectionStore.swift */; };
+		A1000037 /* SessionActivator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000037 /* SessionActivator.swift */; };
+		A1000430 /* SessionJumpTarget.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000430 /* SessionJumpTarget.swift */; };
+		A1000431 /* SessionNavigation.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000431 /* SessionNavigation.swift */; };
+		A1000038 /* FallbackReason.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000038 /* FallbackReason.swift */; };
+		A1000039 /* PTYInjector.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000039 /* PTYInjector.swift */; };
+		A100003A /* VibeptyClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200003A /* VibeptyClient.swift */; };
+		A100003B /* FallbackToastCenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200003B /* FallbackToastCenter.swift */; };
+		A100004C /* SessionTranscriptReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200004C /* SessionTranscriptReader.swift */; };
+		A100004E /* AnthropicPricingManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200004E /* AnthropicPricingManager.swift */; };
+		A1000050 /* VibeptyAliasInstaller.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000050 /* VibeptyAliasInstaller.swift */; };
+		A1000051 /* install-vibepty.sh in Resources */ = {isa = PBXBuildFile; fileRef = A2000051 /* install-vibepty.sh */; };
+		A1000052 /* vibepty.py in Resources */ = {isa = PBXBuildFile; fileRef = A2000052 /* vibepty.py */; };
+		A1000060 /* DeviceType.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000060 /* DeviceType.swift */; };
+		A1000062 /* NoDeviceEmptyState.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000062 /* NoDeviceEmptyState.swift */; };
+		A1000063 /* DeviceDiscoverySheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000063 /* DeviceDiscoverySheet.swift */; };
+		A1000064 /* StickS3DeviceCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000064 /* StickS3DeviceCard.swift */; };
+		A1000080 /* MicPadDeviceCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000080 /* MicPadDeviceCard.swift */; };
+		A1000081 /* InputModeIntroSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000081 /* InputModeIntroSection.swift */; };
+		A1000065 /* NewDeviceTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000065 /* NewDeviceTab.swift */; };
+		A1000070 /* KeyboardAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000070 /* KeyboardAction.swift */; };
+		A1000101 /* ASRModelManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000101 /* ASRModelManager.swift */; };
+		E1000101 /* EnglishASRModelManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2000101 /* EnglishASRModelManager.swift */; };
+		E1000102 /* SherpaEnglishEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2000102 /* SherpaEnglishEngine.swift */; };
+		E1000103 /* sherpa_english_shim.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E2000103 /* sherpa_english_shim.cpp */; };
+		A1000103 /* FirstRunASRGuide.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000103 /* FirstRunASRGuide.swift */; };
+		A1000110 /* FirstRunSetupState.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000110 /* FirstRunSetupState.swift */; };
+		A1000111 /* FirstRunSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000111 /* FirstRunSetupView.swift */; };
+		A1000120 /* DiagnosticsReporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000120 /* DiagnosticsReporter.swift */; };
+		A1000121 /* AnalyticsConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000121 /* AnalyticsConfig.swift */; };
+		A1000122 /* AnalyticsSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000122 /* AnalyticsSupport.swift */; };
+		AN100001 /* NativeAnalyticsQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = AN200001 /* NativeAnalyticsQueue.swift */; };
+		A1000123 /* AnalyticsClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000123 /* AnalyticsClient.swift */; };
+		A1000104 /* APIEndpointClassifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000104 /* APIEndpointClassifier.swift */; };
+		ABAF3630037DD06813BE5902 /* ClaudeTranscriptTailReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7AF3378E9ABD6F86941DD0EC /* ClaudeTranscriptTailReader.swift */; };
+		DEE7DC7E6A9AE7FAD89F51F0 /* onnxruntime.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8F1427E457D3E3CE956D74CD /* onnxruntime.xcframework */; };
+		E1000104 /* sherpa-onnx-shared.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = E2000104 /* sherpa-onnx-shared.xcframework */; };
+		E1000105 /* sherpa-onnx-shared.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = E2000104 /* sherpa-onnx-shared.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		AB220001 /* ApprovalKit in Frameworks */ = {isa = PBXBuildFile; productRef = AB220002 /* ApprovalKit */; };
+		AB220011 /* ApprovalCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB220012 /* ApprovalCoordinator.swift */; };
+		SE000001 /* Sentry in Frameworks */ = {isa = PBXBuildFile; productRef = SE000002 /* Sentry */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		AA18000002 /* funasr_tpass_shim.mm */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.cpp.objcpp; name = funasr_tpass_shim.mm; path = ThirdParty/funasr/funasr_tpass_shim.mm; sourceTree = SOURCE_ROOT; };
+		C17F000100 /* Cardinal.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Cardinal.swift; path = "ThirdParty/ChineseITN/Sources/ChineseITN/Cardinal.swift"; sourceTree = SOURCE_ROOT; };
+		C17F000101 /* ChineseITN.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ChineseITN.swift; path = "ThirdParty/ChineseITN/Sources/ChineseITN/ChineseITN.swift"; sourceTree = SOURCE_ROOT; };
+		C17F000102 /* Config.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Config.swift; path = "ThirdParty/ChineseITN/Sources/ChineseITN/Config.swift"; sourceTree = SOURCE_ROOT; };
+		C17F000103 /* DateNormalize.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = DateNormalize.swift; path = "ThirdParty/ChineseITN/Sources/ChineseITN/DateNormalize.swift"; sourceTree = SOURCE_ROOT; };
+		C17F000104 /* Decimal.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Decimal.swift; path = "ThirdParty/ChineseITN/Sources/ChineseITN/Decimal.swift"; sourceTree = SOURCE_ROOT; };
+		C17F000105 /* Electronic.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Electronic.swift; path = "ThirdParty/ChineseITN/Sources/ChineseITN/Electronic.swift"; sourceTree = SOURCE_ROOT; };
+		C17F000106 /* Fraction.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Fraction.swift; path = "ThirdParty/ChineseITN/Sources/ChineseITN/Fraction.swift"; sourceTree = SOURCE_ROOT; };
+		C17F000107 /* Lattice.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Lattice.swift; path = "ThirdParty/ChineseITN/Sources/ChineseITN/Lattice.swift"; sourceTree = SOURCE_ROOT; };
+		C17F000108 /* LicensePlate.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = LicensePlate.swift; path = "ThirdParty/ChineseITN/Sources/ChineseITN/LicensePlate.swift"; sourceTree = SOURCE_ROOT; };
+		C17F000109 /* Math.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Math.swift; path = "ThirdParty/ChineseITN/Sources/ChineseITN/Math.swift"; sourceTree = SOURCE_ROOT; };
+		C17F00010A /* Measure.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Measure.swift; path = "ThirdParty/ChineseITN/Sources/ChineseITN/Measure.swift"; sourceTree = SOURCE_ROOT; };
+		C17F00010B /* Money.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Money.swift; path = "ThirdParty/ChineseITN/Sources/ChineseITN/Money.swift"; sourceTree = SOURCE_ROOT; };
+		C17F00010C /* RegexHelpers.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = RegexHelpers.swift; path = "ThirdParty/ChineseITN/Sources/ChineseITN/RegexHelpers.swift"; sourceTree = SOURCE_ROOT; };
+		C17F00010D /* SpecialCardinal.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SpecialCardinal.swift; path = "ThirdParty/ChineseITN/Sources/ChineseITN/SpecialCardinal.swift"; sourceTree = SOURCE_ROOT; };
+		C17F00010E /* Tables.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Tables.swift; path = "ThirdParty/ChineseITN/Sources/ChineseITN/Tables.swift"; sourceTree = SOURCE_ROOT; };
+		C17F00010F /* Taggers.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Taggers.swift; path = "ThirdParty/ChineseITN/Sources/ChineseITN/Taggers.swift"; sourceTree = SOURCE_ROOT; };
+		C17F000110 /* Time.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Time.swift; path = "ThirdParty/ChineseITN/Sources/ChineseITN/Time.swift"; sourceTree = SOURCE_ROOT; };
+		C17F000111 /* Whitelist.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Whitelist.swift; path = "ThirdParty/ChineseITN/Sources/ChineseITN/Whitelist.swift"; sourceTree = SOURCE_ROOT; };
+		C17F0001FF /* ITNPostProcessor.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ITNPostProcessor.swift; sourceTree = "<group>"; };
+		C17F000200 /* RecognitionPunctuationPostProcessor.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RecognitionPunctuationPostProcessor.swift; sourceTree = "<group>"; };
+		0E7946870AF47A06941E21E2 /* FunASRSeacoEngine.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FunASRSeacoEngine.swift; sourceTree = "<group>"; };
+		7AF3378E9ABD6F86941DD0EC /* ClaudeTranscriptTailReader.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ClaudeTranscriptTailReader.swift; sourceTree = "<group>"; };
+		8F1427E457D3E3CE956D74CD /* onnxruntime.xcframework */ = {isa = PBXFileReference; includeInIndex = 1; name = onnxruntime.xcframework; path = "ThirdParty/sherpa-onnx/onnxruntime.xcframework"; sourceTree = "<group>"; };
+		941FDBE695CD788F6061B634 /* funasr.xcframework */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = wrapper.xcframework; name = funasr.xcframework; path = ThirdParty/funasr/funasr.xcframework; sourceTree = "<group>"; };
+		A2000001 /* QuickVibeHostApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickVibeHostApp.swift; sourceTree = "<group>"; };
+		A2000002 /* BLEManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BLEManager.swift; sourceTree = "<group>"; };
+		A2000003 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		A2000004 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		A2000400 /* LineQVMSImage.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = LineQVMSImage.png; path = ../Resources/LineQVMSImage.png; sourceTree = SOURCE_ROOT; };
+		A2000005 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		A20000B1 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		A20000B2 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
+		A20000B3 /* zh-Hant */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hant"; path = "zh-Hant.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
+		A20000C1 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
+		A20000C2 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Localizable.strings"; sourceTree = "<group>"; };
+		A20000C3 /* zh-Hant */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hant"; path = "zh-Hant.lproj/Localizable.strings"; sourceTree = "<group>"; };
+		A2000006 /* QuickVibeHost.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = QuickVibeHost.entitlements; sourceTree = "<group>"; };
+		A2000007 /* AudioCaptureManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioCaptureManager.swift; sourceTree = "<group>"; };
+		A2000008 /* DoubaoASRClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DoubaoASRClient.swift; sourceTree = "<group>"; };
+		A200007B /* StreamingASRSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreamingASRSession.swift; sourceTree = "<group>"; };
+		A2000520 /* StreamingASRFlushPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreamingASRFlushPolicy.swift; sourceTree = "<group>"; };
+		A2000009 /* KeyboardSimulator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardSimulator.swift; sourceTree = "<group>"; };
+		A2000130 /* DeviceActionMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceActionMode.swift; sourceTree = "<group>"; };
+		A2000132 /* DeviceI18n.generated.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceI18n.generated.swift; sourceTree = "<group>"; };
+		A2000133 /* AppL10n.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppL10n.swift; sourceTree = "<group>"; };
+		A2000131 /* DeviceActionModeController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceActionModeController.swift; sourceTree = "<group>"; };
+		A200000A /* RecognitionHistoryManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecognitionHistoryManager.swift; sourceTree = "<group>"; };
+		A200000B /* ClaudeUsageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaudeUsageManager.swift; sourceTree = "<group>"; };
+		A200003C /* AgentProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentProvider.swift; sourceTree = "<group>"; };
+		A2000432 /* AgentBillingMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentBillingMode.swift; sourceTree = "<group>"; };
+		A2000090 /* CodexSessionMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodexSessionMonitor.swift; sourceTree = "<group>"; };
+		A2000410 /* CodexRolloutEventMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodexRolloutEventMonitor.swift; sourceTree = "<group>"; };
+		A2000530 /* TaskLifecycle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskLifecycle.swift; sourceTree = "<group>"; };
+		A2000540 /* WorkBuddyDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkBuddyDataSource.swift; sourceTree = "<group>"; };
+		A2000541 /* WorkBuddySessionMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkBuddySessionMonitor.swift; sourceTree = "<group>"; };
+		A2000542 /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.text-based-dylib-definition; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
+		A2000411 /* AppUpdateSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdateSupport.swift; sourceTree = "<group>"; };
+		A2000412 /* AppUpdateManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdateManager.swift; sourceTree = "<group>"; };
+		A2000134 /* ChatGPTConversationMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatGPTConversationMonitor.swift; sourceTree = "<group>"; };
+		A2000340 /* SessionLiveness.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionLiveness.swift; sourceTree = "<group>"; };
+		A2000193 /* BenchServer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BenchServer.swift; sourceTree = "<group>"; };
+		A200000D /* ClaudeCodeSessionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaudeCodeSessionManager.swift; sourceTree = "<group>"; };
+		A200000E /* GlobalHotkeyManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobalHotkeyManager.swift; sourceTree = "<group>"; };
+		A200000F /* RecordingOverlayPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingOverlayPanel.swift; sourceTree = "<group>"; };
+		A2000010 /* ADPCMDecoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ADPCMDecoder.swift; sourceTree = "<group>"; };
+		A2000011 /* MainWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainWindowController.swift; sourceTree = "<group>"; };
+		A2000012 /* StatusTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusTab.swift; sourceTree = "<group>"; };
+		A2000401 /* LocalAIUsageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalAIUsageManager.swift; sourceTree = "<group>"; };
+		A2000402 /* AIUsageOverviewSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIUsageOverviewSection.swift; sourceTree = "<group>"; };
+		A2000403 /* ccusage */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; name = ccusage; path = ThirdParty/ccusage/ccusage; sourceTree = SOURCE_ROOT; };
+		A2000404 /* CCUSAGE_LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = ThirdParty/ccusage/CCUSAGE_LICENSE; sourceTree = SOURCE_ROOT; };
+		A2000405 /* TOKENREMAIN_NOTICE */ = {isa = PBXFileReference; lastKnownFileType = text; path = ThirdParty/TOKENREMAIN_NOTICE; sourceTree = SOURCE_ROOT; };
+		A2000406 /* TOKENREMAIN_LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = ThirdParty/TOKENREMAIN_LICENSE; sourceTree = SOURCE_ROOT; };
+		A2000013 /* DeviceTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceTab.swift; sourceTree = "<group>"; };
+		A2000014 /* SettingsTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsTab.swift; sourceTree = "<group>"; };
+		A2000016 /* RecognitionBoost.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecognitionBoost.swift; sourceTree = "<group>"; };
+		A2000017 /* ProjectHotwordProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectHotwordProvider.swift; sourceTree = "<group>"; };
+		A2000018 /* ASRHotwordInputParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ASRHotwordInputParser.swift; sourceTree = "<group>"; };
+		A2000019 /* ProgrammingTextPostProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgrammingTextPostProcessor.swift; sourceTree = "<group>"; };
+		A200001A /* DeepSeekPostProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeepSeekPostProcessor.swift; sourceTree = "<group>"; };
+		A2000510 /* PromptRecommendation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromptRecommendation.swift; sourceTree = "<group>"; };
+		A2000512 /* InputAssistant.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputAssistant.swift; sourceTree = "<group>"; };
+		A2000511 /* BuiltInPromptTemplates.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = BuiltInPromptTemplates.json; sourceTree = "<group>"; };
+		A2000020 /* HookSocketServer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HookSocketServer.swift; sourceTree = "<group>"; };
+		A2000021 /* ClaudeHookSessionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaudeHookSessionStore.swift; sourceTree = "<group>"; };
+		A2000022 /* HookInstaller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HookInstaller.swift; sourceTree = "<group>"; };
+		A2000024 /* StatusLineInstaller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusLineInstaller.swift; sourceTree = "<group>"; };
+		A2000023 /* vibepanel-hook.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = "vibepanel-hook.py"; sourceTree = "<group>"; };
+		A2000092 /* quickvibehost-codex-hook.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = "quickvibehost-codex-hook.py"; sourceTree = "<group>"; };
+		A2000551 /* quickvibehost-workbuddy-approval.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = "quickvibehost-workbuddy-approval.py"; sourceTree = "<group>"; };
+		A2000552 /* quickvibehost-workbuddy-marketplace.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "quickvibehost-workbuddy-marketplace.json"; sourceTree = "<group>"; };
+		A2000553 /* quickvibehost-workbuddy-plugin.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "quickvibehost-workbuddy-plugin.json"; sourceTree = "<group>"; };
+		A2000554 /* quickvibehost-workbuddy-hooks.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "quickvibehost-workbuddy-hooks.json"; sourceTree = "<group>"; };
+		A2000091 /* CodexApproval.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodexApproval.swift; sourceTree = "<group>"; };
+		A2000550 /* WorkBuddyApproval.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkBuddyApproval.swift; sourceTree = "<group>"; };
+		A2000030 /* HistoryTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryTab.swift; sourceTree = "<group>"; };
+		A2000031 /* SessionColorManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionColorManager.swift; sourceTree = "<group>"; };
+		A2000032 /* PTYWriter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PTYWriter.swift; sourceTree = "<group>"; };
+		A2000034 /* InputRoutingMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputRoutingMode.swift; sourceTree = "<group>"; };
+		A2000035 /* InputRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputRouter.swift; sourceTree = "<group>"; };
+		A2000036 /* SessionSelectionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionSelectionStore.swift; sourceTree = "<group>"; };
+		A2000037 /* SessionActivator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionActivator.swift; sourceTree = "<group>"; };
+		A2000430 /* SessionJumpTarget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionJumpTarget.swift; sourceTree = "<group>"; };
+		A2000431 /* SessionNavigation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionNavigation.swift; sourceTree = "<group>"; };
+		A2000038 /* FallbackReason.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FallbackReason.swift; sourceTree = "<group>"; };
+		A2000039 /* PTYInjector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PTYInjector.swift; sourceTree = "<group>"; };
+		A200003A /* VibeptyClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VibeptyClient.swift; sourceTree = "<group>"; };
+		A2000104 /* APIEndpointClassifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIEndpointClassifier.swift; sourceTree = "<group>"; };
+		A200003B /* FallbackToastCenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FallbackToastCenter.swift; sourceTree = "<group>"; };
+		A200004C /* SessionTranscriptReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionTranscriptReader.swift; sourceTree = "<group>"; };
+		A200004E /* AnthropicPricingManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnthropicPricingManager.swift; sourceTree = "<group>"; };
+		A2000050 /* VibeptyAliasInstaller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VibeptyAliasInstaller.swift; sourceTree = "<group>"; };
+		A2000051 /* install-vibepty.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "install-vibepty.sh"; sourceTree = "<group>"; };
+		A2000052 /* vibepty.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = vibepty.py; sourceTree = "<group>"; };
+		A2000060 /* DeviceType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceType.swift; sourceTree = "<group>"; };
+		A2000062 /* NoDeviceEmptyState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoDeviceEmptyState.swift; sourceTree = "<group>"; };
+		A2000063 /* DeviceDiscoverySheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceDiscoverySheet.swift; sourceTree = "<group>"; };
+		A2000064 /* StickS3DeviceCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StickS3DeviceCard.swift; sourceTree = "<group>"; };
+		A2000080 /* MicPadDeviceCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MicPadDeviceCard.swift; sourceTree = "<group>"; };
+		A2000081 /* InputModeIntroSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputModeIntroSection.swift; sourceTree = "<group>"; };
+		A2000065 /* NewDeviceTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewDeviceTab.swift; sourceTree = "<group>"; };
+		A2000070 /* KeyboardAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardAction.swift; sourceTree = "<group>"; };
+		A2000101 /* ASRModelManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ASRModelManager.swift; sourceTree = "<group>"; };
+		E2000101 /* EnglishASRModelManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnglishASRModelManager.swift; sourceTree = "<group>"; };
+		E2000102 /* SherpaEnglishEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SherpaEnglishEngine.swift; sourceTree = "<group>"; };
+		E2000103 /* sherpa_english_shim.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = sherpa_english_shim.cpp; path = "ThirdParty/sherpa-onnx/sherpa_english_shim.cpp"; sourceTree = SOURCE_ROOT; };
+		E2000105 /* sherpa_english_shim.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = sherpa_english_shim.h; path = "ThirdParty/sherpa-onnx/sherpa_english_shim.h"; sourceTree = SOURCE_ROOT; };
+		E2000104 /* sherpa-onnx-shared.xcframework */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = wrapper.xcframework; name = "sherpa-onnx-shared.xcframework"; path = "ThirdParty/sherpa-onnx/sherpa-onnx-shared.xcframework"; sourceTree = "<group>"; };
+		A2000103 /* FirstRunASRGuide.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirstRunASRGuide.swift; sourceTree = "<group>"; };
+		A2000110 /* FirstRunSetupState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirstRunSetupState.swift; sourceTree = "<group>"; };
+		A2000111 /* FirstRunSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirstRunSetupView.swift; sourceTree = "<group>"; };
+		A2000120 /* DiagnosticsReporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticsReporter.swift; sourceTree = "<group>"; };
+		A2000121 /* AnalyticsConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsConfig.swift; sourceTree = "<group>"; };
+		A2000122 /* AnalyticsSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsSupport.swift; sourceTree = "<group>"; };
+		AN200001 /* NativeAnalyticsQueue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeAnalyticsQueue.swift; sourceTree = "<group>"; };
+		A2000123 /* AnalyticsClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsClient.swift; sourceTree = "<group>"; };
+		A3000001 /* QuickVibeHost.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = QuickVibeHost.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AB220012 /* ApprovalCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApprovalCoordinator.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		A4000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A1000542 /* libsqlite3.tbd in Frameworks */,
+				E1000104 /* sherpa-onnx-shared.xcframework in Frameworks */,
+				DEE7DC7E6A9AE7FAD89F51F0 /* onnxruntime.xcframework in Frameworks */,
+				9C2AE53AFB5CA818FA9C2ACB /* funasr.xcframework in Frameworks */,
+				AB220001 /* ApprovalKit in Frameworks */,
+				SE000001 /* Sentry in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		7E16E2A03B92B361FCA9BA27 /* funasr */ = {
+			isa = PBXGroup;
+			children = (
+				941FDBE695CD788F6061B634 /* funasr.xcframework */,
+			);
+			name = funasr;
+			sourceTree = "<group>";
+		};
+		A5000001 = {
+			isa = PBXGroup;
+			children = (
+				A5000002 /* QuickVibeHost */,
+				A5000003 /* Products */,
+				CCFCB7B8E6773440BF089C68 /* ThirdParty */,
+			);
+			sourceTree = "<group>";
+		};
+		A5000002 /* QuickVibeHost */ = {
+			isa = PBXGroup;
+			children = (
+				A2000401 /* LocalAIUsageManager.swift */,
+				A2000402 /* AIUsageOverviewSection.swift */,
+				A2000001 /* QuickVibeHostApp.swift */,
+				A2000411 /* AppUpdateSupport.swift */,
+				A2000412 /* AppUpdateManager.swift */,
+				AB220012 /* ApprovalCoordinator.swift */,
+				A2000002 /* BLEManager.swift */,
+				A2000003 /* ContentView.swift */,
+				A2000011 /* MainWindowController.swift */,
+				A2000012 /* StatusTab.swift */,
+				A2000013 /* DeviceTab.swift */,
+				A2000065 /* NewDeviceTab.swift */,
+				A2000060 /* DeviceType.swift */,
+				A2000062 /* NoDeviceEmptyState.swift */,
+				A2000063 /* DeviceDiscoverySheet.swift */,
+				A2000110 /* FirstRunSetupState.swift */,
+				A2000111 /* FirstRunSetupView.swift */,
+				A2000121 /* AnalyticsConfig.swift */,
+				A2000122 /* AnalyticsSupport.swift */,
+				AN200001 /* NativeAnalyticsQueue.swift */,
+				A2000123 /* AnalyticsClient.swift */,
+				A2000064 /* StickS3DeviceCard.swift */,
+				A2000080 /* MicPadDeviceCard.swift */,
+				A2000081 /* InputModeIntroSection.swift */,
+				A2000070 /* KeyboardAction.swift */,
+				A2000014 /* SettingsTab.swift */,
+				A2000016 /* RecognitionBoost.swift */,
+				A2000017 /* ProjectHotwordProvider.swift */,
+				A2000018 /* ASRHotwordInputParser.swift */,
+				A2000019 /* ProgrammingTextPostProcessor.swift */,
+				A200001A /* DeepSeekPostProcessor.swift */,
+				A2000510 /* PromptRecommendation.swift */,
+				A2000512 /* InputAssistant.swift */,
+				A2000120 /* DiagnosticsReporter.swift */,
+				A2000030 /* HistoryTab.swift */,
+				A2000007 /* AudioCaptureManager.swift */,
+				A2000008 /* DoubaoASRClient.swift */,
+				A200007B /* StreamingASRSession.swift */,
+				A2000520 /* StreamingASRFlushPolicy.swift */,
+				A2000009 /* KeyboardSimulator.swift */,
+				A2000130 /* DeviceActionMode.swift */,
+				A2000132 /* DeviceI18n.generated.swift */,
+				A2000133 /* AppL10n.swift */,
+				A2000131 /* DeviceActionModeController.swift */,
+				A200000A /* RecognitionHistoryManager.swift */,
+				A200000B /* ClaudeUsageManager.swift */,
+				A200003C /* AgentProvider.swift */,
+				A2000432 /* AgentBillingMode.swift */,
+				A2000090 /* CodexSessionMonitor.swift */,
+				A2000410 /* CodexRolloutEventMonitor.swift */,
+				A2000530 /* TaskLifecycle.swift */,
+				A2000540 /* WorkBuddyDataSource.swift */,
+				A2000541 /* WorkBuddySessionMonitor.swift */,
+				A2000550 /* WorkBuddyApproval.swift */,
+				A2000134 /* ChatGPTConversationMonitor.swift */,
+				A2000340 /* SessionLiveness.swift */,
+				A2000193 /* BenchServer.swift */,
+				A2000091 /* CodexApproval.swift */,
+				A200000D /* ClaudeCodeSessionManager.swift */,
+				A200000E /* GlobalHotkeyManager.swift */,
+				A200000F /* RecordingOverlayPanel.swift */,
+				A2000010 /* ADPCMDecoder.swift */,
+				A2000020 /* HookSocketServer.swift */,
+				A2000021 /* ClaudeHookSessionStore.swift */,
+				A200004C /* SessionTranscriptReader.swift */,
+				A200004E /* AnthropicPricingManager.swift */,
+				A2000022 /* HookInstaller.swift */,
+				A2000024 /* StatusLineInstaller.swift */,
+				A2000031 /* SessionColorManager.swift */,
+				A2000032 /* PTYWriter.swift */,
+				A2000034 /* InputRoutingMode.swift */,
+				A2000035 /* InputRouter.swift */,
+				A2000036 /* SessionSelectionStore.swift */,
+				A2000037 /* SessionActivator.swift */,
+				A2000430 /* SessionJumpTarget.swift */,
+				A2000431 /* SessionNavigation.swift */,
+				A2000038 /* FallbackReason.swift */,
+				A2000039 /* PTYInjector.swift */,
+				A200003A /* VibeptyClient.swift */,
+				A2000104 /* APIEndpointClassifier.swift */,
+				A2000050 /* VibeptyAliasInstaller.swift */,
+				A200003B /* FallbackToastCenter.swift */,
+				A5000007 /* Debug */,
+				A2000101 /* ASRModelManager.swift */,
+				E2000101 /* EnglishASRModelManager.swift */,
+				E2000102 /* SherpaEnglishEngine.swift */,
+				A2000103 /* FirstRunASRGuide.swift */,
+				A5000004 /* Resources */,
+				A20000A4 /* Localizable.strings */,
+				A20000A5 /* InfoPlist.strings */,
+				A2000004 /* Assets.xcassets */,
+				A2000005 /* Info.plist */,
+				A2000006 /* QuickVibeHost.entitlements */,
+				7AF3378E9ABD6F86941DD0EC /* ClaudeTranscriptTailReader.swift */,
+				0E7946870AF47A06941E21E2 /* FunASRSeacoEngine.swift */,
+				AA18000002 /* funasr_tpass_shim.mm */,
+				C17F0001FF /* ITNPostProcessor.swift */,
+				C17F000200 /* RecognitionPunctuationPostProcessor.swift */,
+				C17E000000 /* ChineseITN */,
+			);
+			path = QuickVibeHost;
+			sourceTree = "<group>";
+		};
+		A5000003 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				A3000001 /* QuickVibeHost.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		A5000004 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				A2000400 /* LineQVMSImage.png */,
+				A2000511 /* BuiltInPromptTemplates.json */,
+				A2000023 /* vibepanel-hook.py */,
+				A2000092 /* quickvibehost-codex-hook.py */,
+				A2000551 /* quickvibehost-workbuddy-approval.py */,
+				A2000552 /* quickvibehost-workbuddy-marketplace.json */,
+				A2000553 /* quickvibehost-workbuddy-plugin.json */,
+				A2000554 /* quickvibehost-workbuddy-hooks.json */,
+				A2000051 /* install-vibepty.sh */,
+				A2000052 /* vibepty.py */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		A5000007 /* Debug */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Debug;
+			sourceTree = "<group>";
+		};
+		CCFCB7B8E6773440BF089C68 /* ThirdParty */ = {
+			isa = PBXGroup;
+			children = (
+				A2000403 /* ccusage */,
+				A2000404 /* CCUSAGE_LICENSE */,
+				A2000405 /* TOKENREMAIN_NOTICE */,
+				A2000406 /* TOKENREMAIN_LICENSE */,
+				D5C9BA87B0CB42171C9025AB /* sherpa-onnx */,
+				7E16E2A03B92B361FCA9BA27 /* funasr */,
+			);
+			name = ThirdParty;
+			sourceTree = "<group>";
+		};
+		D5C9BA87B0CB42171C9025AB /* sherpa-onnx */ = {
+			isa = PBXGroup;
+			children = (
+				E2000105 /* sherpa_english_shim.h */,
+				E2000103 /* sherpa_english_shim.cpp */,
+				E2000104 /* sherpa-onnx-shared.xcframework */,
+				8F1427E457D3E3CE956D74CD /* onnxruntime.xcframework */,
+			);
+			name = "sherpa-onnx";
+			sourceTree = "<group>";
+		};
+		C17E000000 /* ChineseITN */ = {
+			isa = PBXGroup;
+			children = (
+				C17F000100 /* Cardinal.swift */,
+				C17F000101 /* ChineseITN.swift */,
+				C17F000102 /* Config.swift */,
+				C17F000103 /* DateNormalize.swift */,
+				C17F000104 /* Decimal.swift */,
+				C17F000105 /* Electronic.swift */,
+				C17F000106 /* Fraction.swift */,
+				C17F000107 /* Lattice.swift */,
+				C17F000108 /* LicensePlate.swift */,
+				C17F000109 /* Math.swift */,
+				C17F00010A /* Measure.swift */,
+				C17F00010B /* Money.swift */,
+				C17F00010C /* RegexHelpers.swift */,
+				C17F00010D /* SpecialCardinal.swift */,
+				C17F00010E /* Tables.swift */,
+				C17F00010F /* Taggers.swift */,
+				C17F000110 /* Time.swift */,
+				C17F000111 /* Whitelist.swift */,
+			);
+			name = ChineseITN;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		A6000001 /* QuickVibeHost */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A8000003 /* Build configuration list for PBXNativeTarget "QuickVibeHost" */;
+			buildPhases = (
+				A7000001 /* Sources */,
+				A4000001 /* Frameworks */,
+				A7000002 /* Resources */,
+				E7000004 /* Embed Frameworks */,
+				A7000003 /* Embed Helpers */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = QuickVibeHost;
+			packageProductDependencies = (
+				AB220002 /* ApprovalKit */,
+				SE000002 /* Sentry */,
+			);
+			productName = QuickVibeHost;
+			productReference = A3000001 /* QuickVibeHost.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		E7000004 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				E1000105 /* sherpa-onnx-shared.xcframework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A7000003 /* Embed Helpers */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = Contents/Helpers;
+			dstSubfolderSpec = 1;
+			files = (
+				A1000403 /* ccusage in Embed Helpers */,
+			);
+			name = "Embed Helpers";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		A20000A5 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				A20000B1 /* en */,
+				A20000B2 /* zh-Hans */,
+				A20000B3 /* zh-Hant */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+		A20000A4 /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				A20000C1 /* en */,
+				A20000C2 /* zh-Hans */,
+				A20000C3 /* zh-Hant */,
+			);
+			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin PBXProject section */
+		A9000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1540;
+				LastUpgradeCheck = 1540;
+				TargetAttributes = {
+					A6000001 = {
+						CreatedOnToolsVersion = 15.4;
+					};
+				};
+			};
+			buildConfigurationList = A8000001 /* Build configuration list for PBXProject "QuickVibeHost" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+				"zh-Hans",
+				"zh-Hant",
+			);
+			mainGroup = A5000001;
+			packageReferences = (
+				AB220003 /* XCLocalSwiftPackageReference "ApprovalKit" */,
+				SE000003 /* XCRemoteSwiftPackageReference "sentry-cocoa" */,
+			);
+			productRefGroup = A5000003 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				A6000001 /* QuickVibeHost */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		A7000002 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A1000004 /* Assets.xcassets in Resources */,
+				A10000A4 /* Localizable.strings in Resources */,
+				A10000A5 /* InfoPlist.strings in Resources */,
+				A1000400 /* LineQVMSImage.png in Resources */,
+				A1000023 /* vibepanel-hook.py in Resources */,
+				A1000192 /* quickvibehost-codex-hook.py in Resources */,
+				A1000551 /* quickvibehost-workbuddy-approval.py in Resources */,
+				A1000552 /* quickvibehost-workbuddy-marketplace.json in Resources */,
+				A1000553 /* quickvibehost-workbuddy-plugin.json in Resources */,
+				A1000554 /* quickvibehost-workbuddy-hooks.json in Resources */,
+				A1000051 /* install-vibepty.sh in Resources */,
+				A1000052 /* vibepty.py in Resources */,
+				A1000404 /* CCUSAGE_LICENSE in Resources */,
+				A1000405 /* TOKENREMAIN_NOTICE in Resources */,
+				A1000406 /* TOKENREMAIN_LICENSE in Resources */,
+				A1000511 /* BuiltInPromptTemplates.json in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		A7000001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A1000001 /* QuickVibeHostApp.swift in Sources */,
+				A1000411 /* AppUpdateSupport.swift in Sources */,
+				A1000412 /* AppUpdateManager.swift in Sources */,
+				AB220011 /* ApprovalCoordinator.swift in Sources */,
+				C17B000100 /* Cardinal.swift in Sources */,
+				C17B000101 /* ChineseITN.swift in Sources */,
+				C17B000102 /* Config.swift in Sources */,
+				C17B000103 /* DateNormalize.swift in Sources */,
+				C17B000104 /* Decimal.swift in Sources */,
+				C17B000105 /* Electronic.swift in Sources */,
+				C17B000106 /* Fraction.swift in Sources */,
+				C17B000107 /* Lattice.swift in Sources */,
+				C17B000108 /* LicensePlate.swift in Sources */,
+				C17B000109 /* Math.swift in Sources */,
+				C17B00010A /* Measure.swift in Sources */,
+				C17B00010B /* Money.swift in Sources */,
+				C17B00010C /* RegexHelpers.swift in Sources */,
+				C17B00010D /* SpecialCardinal.swift in Sources */,
+				C17B00010E /* Tables.swift in Sources */,
+				C17B00010F /* Taggers.swift in Sources */,
+				C17B000110 /* Time.swift in Sources */,
+				C17B000111 /* Whitelist.swift in Sources */,
+				C17B0001FF /* ITNPostProcessor.swift in Sources */,
+				C17B000200 /* RecognitionPunctuationPostProcessor.swift in Sources */,
+				A1000002 /* BLEManager.swift in Sources */,
+				A1000003 /* ContentView.swift in Sources */,
+				A100000F /* MainWindowController.swift in Sources */,
+				A1000010 /* StatusTab.swift in Sources */,
+				A1000401 /* LocalAIUsageManager.swift in Sources */,
+				A1000402 /* AIUsageOverviewSection.swift in Sources */,
+				A1000011 /* DeviceTab.swift in Sources */,
+				A1000065 /* NewDeviceTab.swift in Sources */,
+				A1000060 /* DeviceType.swift in Sources */,
+				A1000062 /* NoDeviceEmptyState.swift in Sources */,
+				A1000063 /* DeviceDiscoverySheet.swift in Sources */,
+				A1000110 /* FirstRunSetupState.swift in Sources */,
+				A1000111 /* FirstRunSetupView.swift in Sources */,
+				A1000121 /* AnalyticsConfig.swift in Sources */,
+				A1000122 /* AnalyticsSupport.swift in Sources */,
+				AN100001 /* NativeAnalyticsQueue.swift in Sources */,
+				A1000123 /* AnalyticsClient.swift in Sources */,
+				A1000064 /* StickS3DeviceCard.swift in Sources */,
+				A1000080 /* MicPadDeviceCard.swift in Sources */,
+				A1000081 /* InputModeIntroSection.swift in Sources */,
+				A1000070 /* KeyboardAction.swift in Sources */,
+				A1000012 /* SettingsTab.swift in Sources */,
+				A1000016 /* RecognitionBoost.swift in Sources */,
+				A1000017 /* ProjectHotwordProvider.swift in Sources */,
+				A1000018 /* ASRHotwordInputParser.swift in Sources */,
+				A1000019 /* ProgrammingTextPostProcessor.swift in Sources */,
+				A100001A /* DeepSeekPostProcessor.swift in Sources */,
+				A1000510 /* PromptRecommendation.swift in Sources */,
+				A1000512 /* InputAssistant.swift in Sources */,
+				A1000005 /* AudioCaptureManager.swift in Sources */,
+				A1000006 /* DoubaoASRClient.swift in Sources */,
+				A100007B /* StreamingASRSession.swift in Sources */,
+				A1000520 /* StreamingASRFlushPolicy.swift in Sources */,
+				A1000007 /* KeyboardSimulator.swift in Sources */,
+				A1000130 /* DeviceActionMode.swift in Sources */,
+				A1000132 /* DeviceI18n.generated.swift in Sources */,
+				A1000133 /* AppL10n.swift in Sources */,
+				A1000131 /* DeviceActionModeController.swift in Sources */,
+				A1000008 /* RecognitionHistoryManager.swift in Sources */,
+				A1000009 /* ClaudeUsageManager.swift in Sources */,
+				A10000F1 /* AgentProvider.swift in Sources */,
+				A1000432 /* AgentBillingMode.swift in Sources */,
+				A1000190 /* CodexSessionMonitor.swift in Sources */,
+				A1000410 /* CodexRolloutEventMonitor.swift in Sources */,
+				A1000530 /* TaskLifecycle.swift in Sources */,
+				A1000540 /* WorkBuddyDataSource.swift in Sources */,
+				A1000541 /* WorkBuddySessionMonitor.swift in Sources */,
+				A1000550 /* WorkBuddyApproval.swift in Sources */,
+				A1000134 /* ChatGPTConversationMonitor.swift in Sources */,
+				A1000340 /* SessionLiveness.swift in Sources */,
+				A1000193 /* BenchServer.swift in Sources */,
+				A1000191 /* CodexApproval.swift in Sources */,
+				A100000B /* ClaudeCodeSessionManager.swift in Sources */,
+				A100000C /* GlobalHotkeyManager.swift in Sources */,
+				A100000D /* RecordingOverlayPanel.swift in Sources */,
+				A100000E /* ADPCMDecoder.swift in Sources */,
+				A1000020 /* HookSocketServer.swift in Sources */,
+				A1000021 /* ClaudeHookSessionStore.swift in Sources */,
+				A100004C /* SessionTranscriptReader.swift in Sources */,
+				A100004E /* AnthropicPricingManager.swift in Sources */,
+				A1000022 /* HookInstaller.swift in Sources */,
+				A1000024 /* StatusLineInstaller.swift in Sources */,
+				A1000030 /* HistoryTab.swift in Sources */,
+				A1000031 /* SessionColorManager.swift in Sources */,
+				A1000032 /* PTYWriter.swift in Sources */,
+				A1000034 /* InputRoutingMode.swift in Sources */,
+				A1000035 /* InputRouter.swift in Sources */,
+				A1000036 /* SessionSelectionStore.swift in Sources */,
+				A1000037 /* SessionActivator.swift in Sources */,
+				A1000430 /* SessionJumpTarget.swift in Sources */,
+				A1000431 /* SessionNavigation.swift in Sources */,
+				A1000038 /* FallbackReason.swift in Sources */,
+				A1000039 /* PTYInjector.swift in Sources */,
+				A100003A /* VibeptyClient.swift in Sources */,
+				A1000104 /* APIEndpointClassifier.swift in Sources */,
+				A1000050 /* VibeptyAliasInstaller.swift in Sources */,
+				A100003B /* FallbackToastCenter.swift in Sources */,
+				A1000101 /* ASRModelManager.swift in Sources */,
+				E1000101 /* EnglishASRModelManager.swift in Sources */,
+				E1000102 /* SherpaEnglishEngine.swift in Sources */,
+				E1000103 /* sherpa_english_shim.cpp in Sources */,
+				A1000103 /* FirstRunASRGuide.swift in Sources */,
+				A1000120 /* DiagnosticsReporter.swift in Sources */,
+				ABAF3630037DD06813BE5902 /* ClaudeTranscriptTailReader.swift in Sources */,
+				200A006854600753D018C975 /* FunASRSeacoEngine.swift in Sources */,
+				AA18000001 /* funasr_tpass_shim.mm in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		A8000011 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		A8000012 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+			};
+			name = Release;
+		};
+		A8000021 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = QuickVibeHost/QuickVibeHost.entitlements;
+				CODE_SIGN_STYLE = Manual;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = QuickVibeHost/Info.plist;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				INFOPLIST_KEY_LSUIElement = NO;
+				INFOPLIST_KEY_NSAppleEventsUsageDescription = "VE 语音指挥棒需要访问“音乐”以在设备上显示当前歌曲和歌手。";
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "VE 语音指挥棒需要蓝牙权限来连接 VE 语音指挥棒硬件。";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "VE 语音指挥棒需要麦克风权限来录音并进行语音识别。";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 2.8.1;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-lc++",
+					"-framework",
+					CoreFoundation,
+					"-framework",
+					Foundation,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.vibeeverything.QuickVibeHost;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "$(SRCROOT)/ThirdParty/funasr/funasr_c_shim.h";
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/ThirdParty/funasr/funasr.xcframework/macos-arm64/Headers",
+					"$(SRCROOT)/ThirdParty/sherpa-onnx",
+				);
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		A8000022 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = QuickVibeHost/QuickVibeHost.entitlements;
+				CODE_SIGN_STYLE = Manual;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = QuickVibeHost/Info.plist;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				INFOPLIST_KEY_LSUIElement = NO;
+				INFOPLIST_KEY_NSAppleEventsUsageDescription = "VE 语音指挥棒需要访问“音乐”以在设备上显示当前歌曲和歌手。";
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "VE 语音指挥棒需要蓝牙权限来连接 VE 语音指挥棒硬件。";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "VE 语音指挥棒需要麦克风权限来录音并进行语音识别。";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 2.8.1;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-lc++",
+					"-framework",
+					CoreFoundation,
+					"-framework",
+					Foundation,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.vibeeverything.QuickVibeHost;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "$(SRCROOT)/ThirdParty/funasr/funasr_c_shim.h";
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/ThirdParty/funasr/funasr.xcframework/macos-arm64/Headers",
+					"$(SRCROOT)/ThirdParty/sherpa-onnx",
+				);
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		SE000003 /* XCRemoteSwiftPackageReference "sentry-cocoa" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/getsentry/sentry-cocoa.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 9.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		AB220003 /* XCLocalSwiftPackageReference "ApprovalKit" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ApprovalKit;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		AB220002 /* ApprovalKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = ApprovalKit;
+		};
+		SE000002 /* Sentry */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = SE000003 /* XCRemoteSwiftPackageReference "sentry-cocoa" */;
+			productName = Sentry;
+		};
+/* End XCSwiftPackageProductDependency section */
+
+/* Begin XCConfigurationList section */
+		A8000001 /* Build configuration list for PBXProject "QuickVibeHost" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A8000011 /* Debug */,
+				A8000012 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A8000003 /* Build configuration list for PBXNativeTarget "QuickVibeHost" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A8000021 /* Debug */,
+				A8000022 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = A9000001 /* Project object */;
+}

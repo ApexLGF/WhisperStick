@@ -1,0 +1,8 @@
+/* Generated app localization resources. */
+
+"CFBundleDisplayName" = "VE 語音指揮棒";
+"CFBundleName" = "VE 語音指揮棒";
+"NSBluetoothAlwaysUsageDescription" = "VE 語音指揮棒需要藍牙權限來連接 VE 語音指揮棒硬體。";
+"NSAppleEventsUsageDescription" = "VE 語音指揮棒需要取用「音樂」，以在裝置上顯示目前歌曲與歌手。";
+"NSInputMonitoringUsageDescription" = "VE 語音指揮棒需要輸入監聽權限來接收硬體按鍵事件。";
+"NSMicrophoneUsageDescription" = "VE 語音指揮棒需要麥克風權限來錄音並進行語音辨識。";

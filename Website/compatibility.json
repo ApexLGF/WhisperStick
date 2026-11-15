@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "app": {
+    "latest": "2.8.1",
+    "min_supported": "2.6.6",
+    "download_url": "/releases/QuickVibeHost-v2.8.1.dmg"
+  },
+  "firmware": {
+    "micstick-v14": {
+      "latest": "1.2.3",
+      "protocol": 5,
+      "min_app": "2.7.5",
+      "hardware_revision": 14,
+      "status": "stable",
+      "flash_url": "/flash-micstick/",
+      "notes": "WorkBuddy 会话卡片、积分元数据与多 Agent 生命周期提示音；完整体验需 App 2.8.0。"
+    }
+  }
+}

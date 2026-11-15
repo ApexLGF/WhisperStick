@@ -1,0 +1,28 @@
+{
+  "description": "QuickVibeHost WorkBuddy device approval bridge.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "QUICKVIBEHOST_WORKBUDDY_APPROVAL_LOG=\"$HOME/.workbuddy/logs/quickvibehost-approval.jsonl\" /usr/bin/python3 \"${CODEBUDDY_PLUGIN_ROOT}/scripts/quickvibehost-workbuddy-approval.py\"",
+            "timeout": 120
+          }
+        ]
+      }
+    ],
+    "PermissionRequest": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "QUICKVIBEHOST_WORKBUDDY_APPROVAL_LOG=\"$HOME/.workbuddy/logs/quickvibehost-approval.jsonl\" /usr/bin/python3 \"${CODEBUDDY_PLUGIN_ROOT}/scripts/quickvibehost-workbuddy-approval.py\"",
+            "timeout": 120
+          }
+        ]
+      }
+    ]
+  }
+}

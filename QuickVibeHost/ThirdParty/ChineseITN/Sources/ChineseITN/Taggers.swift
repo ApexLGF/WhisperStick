@@ -1,0 +1,2234 @@
+// Taggers.swift
+// Each ITN module exposes a `tag` function that scans the input and
+// emits zero or more Candidate edges with its associated weight.
+// The Lattice solver picks the lowest-cost coverage.
+//
+// The thin `Module.normalize(_:)` wrappers in each module file
+// delegate to lattice with just that module's tagger + Char fallback
+// — useful for testing one module in isolation. The full pipeline
+// is `ChineseITN.normalize`, which unions all taggers.
+
+import Foundation
+
+// MARK: - Date tagger
+
+extension DateNormalize {
+
+    /// Emit date candidates per WeText date.py:
+    ///   yyyy = digit + (digit|zero)**3   (4-char year)
+    ///   yyy  = digit + (digit|zero)**2   (3-char year)
+    ///   yy   = (digit|zero)**2           (2-char year)
+    ///   date = ((year+month+day) | (year+month) | (month+day)) | year_only
+    static func tag(_ chars: [Character],
+                    config: ChineseITNConfig) -> [Candidate] {
+        var out: [Candidate] = []
+        let n = chars.count
+        let cnDigitSet = Set(cnDigitClass)
+        let cnCardSet = Set(cnCardinalClass)
+
+        // For each position, try matching year/month/day combinations.
+        for i in 0..<n {
+            // Year span: 2-4 cnDigit chars + 年
+            for yearLen in [4, 3, 2] {
+                let yearEnd = i + yearLen
+                guard yearEnd < n, chars[yearEnd] == "年" else { continue }
+                let yearStr = String(chars[i..<yearEnd])
+                guard yearStr.allSatisfy(cnDigitSet.contains) else { continue }
+                let yArabic = String(yearStr.compactMap { digitMap[$0] })
+                guard yArabic.count == yearStr.count else { continue }
+
+                // Try year + month + day
+                if let (monthEnd, mInt) = matchMonth(chars: chars,
+                                                    start: yearEnd + 1) {
+                    if let (dayEnd, dInt, daySuffix) = matchDay(chars: chars, start: monthEnd) {
+                        let dateOutput = formattedDate(
+                            year: yArabic,
+                            month: mInt,
+                            day: dInt,
+                            daySuffix: daySuffix,
+                            original: String(chars[i..<dayEnd]),
+                            config: config
+                        )
+                        out.append(Candidate(
+                            startIdx: i,
+                            endIdx: dayEnd,
+                            output: dateOutput,
+                            weight: TaggerWeight.date,
+                            source: "date"
+                        ))
+                        if let time = TimeNormalize.matchAt(chars: chars,
+                                                            start: dayEnd,
+                                                            config: config) {
+                            out.append(Candidate(
+                                startIdx: i,
+                                endIdx: time.endIdx,
+                                output: joinDateTime(
+                                    dateOutput,
+                                    time.output,
+                                    config: config
+                                ),
+                                weight: TaggerWeight.date + TaggerWeight.time - 0.001,
+                                source: "date_time"
+                            ))
+                        }
+                    }
+                    // Year + month
+                    out.append(Candidate(
+                        startIdx: i,
+                        endIdx: monthEnd,
+                        output: formattedDate(
+                            year: yArabic,
+                            month: mInt,
+                            day: nil,
+                            daySuffix: nil,
+                            original: String(chars[i..<monthEnd]),
+                            config: config
+                        ),
+                        weight: TaggerWeight.date,
+                        source: "date"
+                    ))
+                }
+
+                // Year only (not followed by month) — but always emit
+                // as a candidate; lattice decides via cost.
+                let nextIsCardinal = yearEnd + 1 < n
+                    && cnCardSet.contains(chars[yearEnd + 1])
+                if !nextIsCardinal {
+                    out.append(Candidate(
+                        startIdx: i,
+                        endIdx: yearEnd + 1,
+                        output: formattedYear(
+                            yArabic,
+                            original: String(chars[i..<(yearEnd + 1)]),
+                            config: config
+                        ),
+                        weight: TaggerWeight.date,
+                        source: "date_year_only"
+                    ))
+                }
+            }
+
+            // Month + day standalone (no year prefix)
+            if let (monthEnd, mInt) = matchMonth(chars: chars, start: i) {
+                if let (dayEnd, dInt, daySuffix) = matchDay(chars: chars, start: monthEnd) {
+                    let dateOutput = formattedDate(
+                        year: nil,
+                        month: mInt,
+                        day: dInt,
+                        daySuffix: daySuffix,
+                        original: String(chars[i..<dayEnd]),
+                        config: config
+                    )
+                    out.append(Candidate(
+                        startIdx: i,
+                        endIdx: dayEnd,
+                        output: dateOutput,
+                        weight: TaggerWeight.date,
+                        source: "date_md"
+                    ))
+                    if let time = TimeNormalize.matchAt(chars: chars,
+                                                        start: dayEnd,
+                                                        config: config) {
+                        out.append(Candidate(
+                            startIdx: i,
+                            endIdx: time.endIdx,
+                            output: joinDateTime(
+                                dateOutput,
+                                time.output,
+                                config: config
+                            ),
+                            weight: TaggerWeight.date + TaggerWeight.time - 0.001,
+                            source: "date_time"
+                        ))
+                    }
+                }
+            }
+        }
+        return out
+    }
+
+    private static func formattedDate(year: String?,
+                                      month: Int,
+                                      day: Int?,
+                                      daySuffix: Character?,
+                                      original: String,
+                                      config: ChineseITNConfig) -> String {
+        switch config.temporalOutputStyle {
+        case .compactNumeric:
+            if let year, let day {
+                return String(format: "%@/%02d/%02d", year, month, day)
+            }
+            if let year {
+                return String(format: "%@/%02d", year, month)
+            }
+            if let day {
+                return String(format: "%02d/%02d", month, day)
+            }
+            return original
+        case .chineseNumeric:
+            if let year, let day {
+                return "\(year)年\(month)月\(day)\(daySuffix ?? "日")"
+            }
+            if let year {
+                return "\(year)年\(month)月"
+            }
+            if let day {
+                return "\(month)月\(day)\(daySuffix ?? "日")"
+            }
+            return original
+        case .spokenChinese:
+            return original
+        }
+    }
+
+    private static func formattedYear(_ year: String,
+                                      original: String,
+                                      config: ChineseITNConfig) -> String {
+        switch config.temporalOutputStyle {
+        case .compactNumeric, .chineseNumeric:
+            return "\(year)年"
+        case .spokenChinese:
+            return original
+        }
+    }
+
+    private static func joinDateTime(_ date: String,
+                                     _ time: String,
+                                     config: ChineseITNConfig) -> String {
+        switch config.temporalOutputStyle {
+        case .compactNumeric, .chineseNumeric:
+            return "\(date) \(time)"
+        case .spokenChinese:
+            return "\(date)\(time)"
+        }
+    }
+
+    /// Match a "X月" span starting at `start`. Returns (end-idx-after-月, month-int).
+    private static func matchMonth(chars: [Character], start: Int) -> (Int, Int)? {
+        let n = chars.count
+        let cnCardSet = Set(cnCardinalClass)
+        var j = start
+        while j < n && cnCardSet.contains(chars[j]) { j += 1 }
+        guard j > start, j < n, chars[j] == "月" else { return nil }
+        let mStr = String(chars[start..<j])
+        guard let mInt = Cardinal.parseToInt(mStr), (1...12).contains(mInt)
+        else { return nil }
+        return (j + 1, mInt)
+    }
+
+    /// Match a "X(日|号|號)" span starting at `start`.
+    private static func matchDay(chars: [Character], start: Int) -> (Int, Int, Character)? {
+        let n = chars.count
+        let cnCardSet = Set(cnCardinalClass)
+        var k = start
+        while k < n && cnCardSet.contains(chars[k]) { k += 1 }
+        guard k > start, k < n,
+              chars[k] == "日" || chars[k] == "号" || chars[k] == "號"
+        else { return nil }
+        let dStr = String(chars[start..<k])
+        guard let dInt = Cardinal.parseToInt(dStr), (1...31).contains(dInt)
+        else { return nil }
+        return (k + 1, dInt, chars[k])
+    }
+}
+
+// MARK: - Fraction tagger
+
+extension Fraction {
+
+    /// Emit candidates for: 百分(之)?X / X分之Y / 百分之X到Y range /
+    /// 百分之X点Y decimal, with optional sign prefix.
+    static func tag(_ chars: [Character],
+                    config: ChineseITNConfig) -> [Candidate] {
+        var out: [Candidate] = []
+        let n = chars.count
+        let cnCardSet = Set(cnCardinalClass)
+        let cnDigitSet = Set(cnDigitClass)
+
+        for i in 0..<n {
+            // Optional sign prefix
+            var signLen = 0
+            var signOut = ""
+            if i + 1 < n {
+                let two = String(chars[i...(i + 1)])
+                if let s = Cardinal.signMap[two] { signLen = 2; signOut = s }
+            }
+            if signLen == 0, let s = Cardinal.signMap[String(chars[i])] {
+                signLen = 1; signOut = s
+            }
+
+            // 百分(之)?... pattern
+            let bStart = i + signLen
+            if bStart + 1 < n && chars[bStart] == "百" && chars[bStart + 1] == "分" {
+                var valStart = bStart + 2
+                if valStart < n && chars[valStart] == "之" { valStart += 1 }
+
+                // Value: cnCard span
+                var j = valStart
+                while j < n && cnCardSet.contains(chars[j]) { j += 1 }
+                if j > valStart {
+                    let valStr = String(chars[valStart..<j])
+                    let valInt = valStr == "百" ? 100 : Cardinal.parseToInt(valStr)
+                    if let v = valInt {
+                        // 百分之X (plain) - candidate at endIdx=j
+                        out.append(Candidate(
+                            startIdx: i,
+                            endIdx: j,
+                            output: "\(signOut)\(v)%",
+                            weight: TaggerWeight.fraction,
+                            source: "percent"
+                        ))
+                        // 百分之X点Y form
+                        if j < n && (chars[j] == "点" || chars[j] == "點") {
+                            var k = j + 1
+                            while k < n && cnDigitSet.contains(chars[k]) { k += 1 }
+                            if k > j + 1 {
+                                let fracStr = String(chars[(j + 1)..<k])
+                                let fracDigits = fracStr.compactMap { digitMap[$0] }
+                                if fracDigits.count == fracStr.count {
+                                    out.append(Candidate(
+                                        startIdx: i,
+                                        endIdx: k,
+                                        output: "\(signOut)\(v).\(String(fracDigits))%",
+                                        weight: TaggerWeight.fraction,
+                                        source: "percent_decimal"
+                                    ))
+                                }
+                            }
+                        }
+                        // 百分之X到Y form (optionally 到百分之Y)
+                        if j < n && chars[j] == "到" {
+                            var rangeStart = j + 1
+                            if rangeStart + 1 < n
+                                && chars[rangeStart] == "百"
+                                && chars[rangeStart + 1] == "分" {
+                                rangeStart += 2
+                                if rangeStart < n && chars[rangeStart] == "之" {
+                                    rangeStart += 1
+                                }
+                            }
+                            var k = rangeStart
+                            while k < n && cnCardSet.contains(chars[k]) { k += 1 }
+                            if k > rangeStart {
+                                let bStr = String(chars[rangeStart..<k])
+                                let bVal = bStr == "百" ? 100 : Cardinal.parseToInt(bStr)
+                                if let b = bVal {
+                                    out.append(Candidate(
+                                        startIdx: i,
+                                        endIdx: k,
+                                        output: "\(signOut)\(v)%\(config.rangeConnector)\(b)%",
+                                        weight: TaggerWeight.fraction,
+                                        source: "percent_range"
+                                    ))
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // X分之Y form
+            var j = bStart
+            while j < n && cnCardSet.contains(chars[j]) { j += 1 }
+            if j > bStart, j + 1 < n, chars[j] == "分", chars[j + 1] == "之" {
+                let denomStr = String(chars[bStart..<j])
+                let numerStart = j + 2
+                var k = numerStart
+                while k < n && cnCardSet.contains(chars[k]) { k += 1 }
+                if k > numerStart {
+                    let numerStr = String(chars[numerStart..<k])
+                    if let denom = Cardinal.parseToInt(denomStr),
+                       let numer = Cardinal.parseToInt(numerStr) {
+                        out.append(Candidate(
+                            startIdx: i,
+                            endIdx: k,
+                            output: "\(signOut)\(numer)/\(denom)",
+                            weight: TaggerWeight.fraction,
+                            source: "fraction"
+                        ))
+                    }
+                }
+            }
+        }
+        return out
+    }
+}
+
+// MARK: - Money tagger
+
+extension Money {
+
+    /// Emit money candidates. Chinese style keeps currency names as
+    /// suffix units ("一千美元" -> "1000美元"). Symbol style emits a
+    /// currency prefix ("一千美元" -> "$1000").
+    static func tag(_ chars: [Character],
+                    config: ChineseITNConfig) -> [Candidate] {
+        if config.currencyOutputStyle == .symbol {
+            return tagSymbolPrefix(chars, config: config)
+        }
+        return tagCurrencySuffix(chars, config: config)
+    }
+
+    private static func tagSymbolPrefix(_ chars: [Character],
+                                        config: ChineseITNConfig) -> [Candidate] {
+        var out: [Candidate] = []
+        let n = chars.count
+        let cnCardSet = Set(cnCardinalClass)
+        let cnDigitSet = Set(cnDigitClass)
+
+        let currenciesSorted = normalizedCurrenciesSorted
+
+        for i in 0..<n {
+            // Cardinal+currency (with optional decimal payload)
+            var j = i
+            while j < n && cnCardSet.contains(chars[j]) { j += 1 }
+            let numValid: Bool = j > i && {
+                let numStr = String(chars[i..<j])
+                return parseCurrencyUnitNumber(
+                    numStr,
+                    config: config,
+                    allowSingleDigit: true
+                ) != nil
+            }()
+            if j > i && numValid {
+                let numStr = String(chars[i..<j])
+                if let firstValue = parseCurrencyRangeEndpoint(
+                    numStr,
+                    config: config,
+                    forceArabicDigit: true
+                ),
+                   j < n && chars[j] == "到" {
+                    let rStart = j + 1
+                    var rEnd = rStart
+                    while rEnd < n && cnCardSet.contains(chars[rEnd]) { rEnd += 1 }
+                    if rEnd > rStart,
+                       let secondValue = parseCurrencyRangeEndpoint(
+                            String(chars[rStart..<rEnd]),
+                            config: config,
+                            forceArabicDigit: true
+                       ) {
+                        for cur in currenciesSorted {
+                            if rEnd + cur.count <= n,
+                               String(chars[rEnd..<(rEnd + cur.count)]) == cur {
+                                let prefix = currencyPrefixFor(cur)
+                                out.append(Candidate(
+                                    startIdx: i,
+                                    endIdx: rEnd + cur.count,
+                                    output: "\(prefix)\(firstValue)\(config.rangeConnector)\(prefix)\(secondValue)",
+                                    weight: TaggerWeight.money,
+                                    source: "money_range"
+                                ))
+                            }
+                        }
+                    }
+                }
+
+                // Try currency right after num
+                for cur in currenciesSorted {
+                    if j + cur.count <= n {
+                        let candidate = String(chars[j..<(j + cur.count)])
+                        if candidate == cur {
+                            if let value = parseCurrencyAmountNumber(
+                                numStr,
+                                config: config,
+                                forceArabicDigit: true
+                            ) {
+                                let prefix = currencyPrefixFor(cur)
+                                out.append(Candidate(
+                                    startIdx: i,
+                                    endIdx: j + cur.count,
+                                    output: "\(prefix)\(value)",
+                                    weight: TaggerWeight.money,
+                                    source: "money_cardinal"
+                                ))
+                            }
+                        }
+                    }
+                }
+
+                // Decimal: numStr + 点 + cnDigits + currency
+                if j < n && (chars[j] == "点" || chars[j] == "點") {
+                    var k = j + 1
+                    while k < n && cnDigitSet.contains(chars[k]) { k += 1 }
+                    if k > j + 1 {
+                        let intVal: Int? = Cardinal.parseToInt(numStr)
+                        let fracStr = String(chars[(j + 1)..<k])
+                        let fracDigits = fracStr.compactMap { digitMap[$0] }
+                        if let intV = intVal, fracDigits.count == fracStr.count {
+                            for cur in currenciesSorted {
+                                if k + cur.count <= n {
+                                    let candidate = String(chars[k..<(k + cur.count)])
+                                    if candidate == cur {
+                                        let prefix = currencyPrefixFor(cur)
+                                        out.append(Candidate(
+                                            startIdx: i,
+                                            endIdx: k + cur.count,
+                                            output: "\(prefix)\(intV).\(String(fracDigits))",
+                                            weight: TaggerWeight.money,
+                                            source: "money_decimal"
+                                        ))
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // 元角分 decimal composition: <num>元<digit>(毛|角)[<digit>分]
+            if let (yEnd, yOut) = matchYuanJiaoFenSymbol(chars: chars, start: i) {
+                out.append(Candidate(
+                    startIdx: i,
+                    endIdx: yEnd,
+                    output: yOut,
+                    weight: TaggerWeight.money,
+                    source: "money_yjf"
+                ))
+            }
+
+            // tilde range: tilde key + currency. When special_tilde is
+            // disabled, emit identity over the full span to avoid partial
+            // conversion like "八USD9000".
+            for key in tildeKeysSorted {
+                if i + key.count <= n {
+                    let candidate = String(chars[i..<(i + key.count)])
+                    if candidate == key,
+                       let val = SpecialCardinal.tildePairs[key] {
+                        for cur in currenciesSorted {
+                            let curStart = i + key.count
+                            if curStart + cur.count <= n {
+                                let curCand = String(chars[curStart..<(curStart + cur.count)])
+                                if curCand == cur {
+                                    let prefix = currencyPrefixFor(cur)
+                                    let output = config.spokenRangeStyle == .expand
+                                        ? formatCurrencyRange(
+                                            SpecialCardinal.formatTildeRange(val, config: config),
+                                            prefix: prefix,
+                                            config: config
+                                        )
+                                        : String(chars[i..<(curStart + cur.count)])
+                                    out.append(Candidate(
+                                        startIdx: i,
+                                        endIdx: curStart + cur.count,
+                                        output: output,
+                                        weight: TaggerWeight.money,
+                                        source: "money_tilde"
+                                    ))
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // dash range: 十+pair / digit+十+pair / digit+百+3pair + currency
+            for (form, lead, key) in dashFormsAt(chars: chars, pos: i) {
+                let endOfNum = i + form.count
+                for cur in currenciesSorted {
+                    if endOfNum + cur.count <= n {
+                        let curCand = String(chars[endOfNum..<(endOfNum + cur.count)])
+                        if curCand == cur,
+                           let val = SpecialCardinal.dashPairs[key] {
+                            let leadOut = lead.isEmpty ? "1"
+                                : (digitMap[lead.first!].map(String.init) ?? "")
+                            let prefix = currencyPrefixFor(cur)
+                            let raw = "\(leadOut)\(val)"
+                            let output = config.spokenRangeStyle == .expand
+                                ? formatCurrencyRange(
+                                    SpecialCardinal.formatDashRange(raw, config: config),
+                                    prefix: prefix,
+                                    config: config
+                                )
+                                : String(chars[i..<(endOfNum + cur.count)])
+                            out.append(Candidate(
+                                startIdx: i,
+                                endIdx: endOfNum + cur.count,
+                                output: output,
+                                weight: TaggerWeight.money,
+                                source: "money_dash"
+                            ))
+                        }
+                    }
+                }
+            }
+        }
+        return out
+    }
+
+    private static func tagCurrencySuffix(_ chars: [Character],
+                                          config: ChineseITNConfig) -> [Candidate] {
+        var out: [Candidate] = []
+        let n = chars.count
+        let cnCardSet = Set(cnCardinalClass)
+        let cnDigitSet = Set(cnDigitClass)
+        let currenciesSorted = normalizedCurrenciesSorted
+
+        for i in 0..<n {
+            var j = i
+            while j < n && cnCardSet.contains(chars[j]) { j += 1 }
+            if j > i {
+                let numStr = String(chars[i..<j])
+                if let value = parseCurrencyAmountNumber(
+                    numStr,
+                    config: config,
+                    forceArabicDigit: false
+                ) {
+                    if j < n && chars[j] == "到" {
+                        let rStart = j + 1
+                        var rEnd = rStart
+                        while rEnd < n && cnCardSet.contains(chars[rEnd]) { rEnd += 1 }
+                        if rEnd > rStart,
+                           let firstRangeValue = parseCurrencyRangeEndpoint(
+                                numStr,
+                                config: config,
+                                forceArabicDigit: false
+                           ),
+                           let secondValue = parseCurrencyRangeEndpoint(
+                                String(chars[rStart..<rEnd]),
+                                config: config,
+                                forceArabicDigit: false
+                           ) {
+                            for cur in currenciesSorted {
+                                if rEnd + cur.count <= n,
+                                   String(chars[rEnd..<(rEnd + cur.count)]) == cur {
+                                    out.append(Candidate(
+                                        startIdx: i,
+                                        endIdx: rEnd + cur.count,
+                                        output: "\(firstRangeValue)\(config.rangeConnector)\(secondValue)\(cur)",
+                                        weight: TaggerWeight.money,
+                                        source: "money_suffix_range"
+                                    ))
+                                }
+                            }
+                        }
+                    }
+
+                    for cur in currenciesSorted {
+                        if j + cur.count <= n,
+                           String(chars[j..<(j + cur.count)]) == cur {
+                            out.append(Candidate(
+                                startIdx: i,
+                                endIdx: j + cur.count,
+                                output: "\(value)\(cur)",
+                                weight: TaggerWeight.money,
+                                source: "money_suffix_cardinal"
+                            ))
+                        }
+                    }
+                }
+
+                // Decimal: numStr + 点 + cnDigits + currency.
+                if j < n && (chars[j] == "点" || chars[j] == "點"),
+                   let intOut = parseCurrencyUnitNumber(
+                        numStr,
+                        config: config,
+                        allowSingleDigit: true
+                   ) {
+                    var k = j + 1
+                    while k < n && cnDigitSet.contains(chars[k]) { k += 1 }
+                    if k > j + 1 {
+                        let fracStr = String(chars[(j + 1)..<k])
+                        let fracDigits = fracStr.compactMap { digitMap[$0] }
+                        if fracDigits.count == fracStr.count {
+                            for cur in currenciesSorted {
+                                if k + cur.count <= n,
+                                   String(chars[k..<(k + cur.count)]) == cur {
+                                    out.append(Candidate(
+                                        startIdx: i,
+                                        endIdx: k + cur.count,
+                                        output: "\(intOut).\(String(fracDigits))\(cur)",
+                                        weight: TaggerWeight.money,
+                                        source: "money_suffix_decimal"
+                                    ))
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // 元角分 stays as Chinese suffix units when money normalization is off.
+            if let (yEnd, yOut) = matchYuanJiaoFenSuffix(chars: chars,
+                                                        start: i,
+                                                        config: config) {
+                out.append(Candidate(
+                    startIdx: i,
+                    endIdx: yEnd,
+                    output: yOut,
+                    weight: TaggerWeight.money,
+                    source: "money_suffix_yjf"
+                ))
+            }
+
+            for key in tildeKeysSorted {
+                if i + key.count <= n,
+                   String(chars[i..<(i + key.count)]) == key,
+                   let val = SpecialCardinal.tildePairs[key] {
+                    let curStart = i + key.count
+                    for cur in currenciesSorted {
+                        if curStart + cur.count <= n,
+                           String(chars[curStart..<(curStart + cur.count)]) == cur {
+                            let output = config.spokenRangeStyle == .expand
+                                ? "\(SpecialCardinal.formatTildeRange(val, config: config))\(cur)"
+                                : String(chars[i..<(curStart + cur.count)])
+                            out.append(Candidate(
+                                startIdx: i,
+                                endIdx: curStart + cur.count,
+                                output: output,
+                                weight: TaggerWeight.money,
+                                source: "money_suffix_tilde"
+                            ))
+                        }
+                    }
+                }
+            }
+
+            for (form, lead, key) in dashFormsAt(chars: chars, pos: i) {
+                let endOfNum = i + form.count
+                for cur in currenciesSorted {
+                    if endOfNum + cur.count <= n {
+                        let curCand = String(chars[endOfNum..<(endOfNum + cur.count)])
+                        if curCand == cur,
+                           let val = SpecialCardinal.dashPairs[key] {
+                            let leadOut = lead.isEmpty ? "1"
+                                : (digitMap[lead.first!].map(String.init) ?? "")
+                            let output = config.spokenRangeStyle == .expand
+                                ? "\(SpecialCardinal.formatDashRange("\(leadOut)\(val)", config: config))\(cur)"
+                                : String(chars[i..<(endOfNum + cur.count)])
+                            out.append(Candidate(
+                                startIdx: i,
+                                endIdx: endOfNum + cur.count,
+                                output: output,
+                                weight: TaggerWeight.money,
+                                source: "money_suffix_dash"
+                            ))
+                        }
+                    }
+                }
+            }
+        }
+        return out
+    }
+
+    private static let normalizedCurrenciesSorted: [String] =
+        Set(symbolPrefix.keys).union(codePrefix.keys)
+            .sorted { $0.count > $1.count }
+
+    private static func parseCurrencyUnitNumber(_ s: String,
+                                                config: ChineseITNConfig,
+                                                allowSingleDigit: Bool) -> String? {
+        Cardinal.parseFSTNumber(
+            s,
+            config: config,
+            allowSingleDigit: allowSingleDigit,
+            allowTerminalBareYiOrZhao: true
+        )
+    }
+
+    private static func parseCurrencyRangeEndpoint(_ s: String,
+                                                   config: ChineseITNConfig,
+                                                   forceArabicDigit: Bool) -> String? {
+        if s.count == 1,
+           let first = s.first,
+           digitChars.contains(first) {
+            if config.enable0To9 || forceArabicDigit,
+               let d = digitMap[first] {
+                return String(d)
+            }
+            return s
+        }
+        if let kept = singleDigitMagnitudeOutput(
+            s,
+            convertDigit: config.enable0To9 || forceArabicDigit
+        ) {
+            return kept
+        }
+        return Cardinal.parseFSTNumber(
+            s,
+            config: config,
+            allowSingleDigit: config.enable0To9 || forceArabicDigit,
+            allowTerminalBareYiOrZhao: true
+        )
+    }
+
+    private static func parseCurrencyAmountNumber(_ s: String,
+                                                  config: ChineseITNConfig,
+                                                  forceArabicDigit: Bool) -> String? {
+        if let kept = singleDigitMagnitudeOutput(
+            s,
+            convertDigit: config.enable0To9 || forceArabicDigit
+        ) {
+            return kept
+        }
+        return parseCurrencyUnitNumber(
+            s,
+            config: config,
+            allowSingleDigit: config.enable0To9 || forceArabicDigit
+        )
+    }
+
+    private static func singleDigitMagnitudeOutput(_ s: String,
+                                                   convertDigit: Bool) -> String? {
+        let chars = Array(s)
+        guard chars.count == 2,
+              let first = chars.first,
+              let last = chars.last,
+              digitChars.contains(first),
+              last == "万" || last == "萬" || last == "亿" || last == "億"
+        else { return nil }
+        let suffix = (last == "萬") ? "万" : (last == "億" ? "亿" : String(last))
+        if convertDigit, let d = digitMap[first] {
+            return "\(d)\(suffix)"
+        }
+        return "\(first)\(suffix)"
+    }
+
+    private static func currencyPrefixFor(_ currency: String) -> String {
+        if currency == "人民币" { return "¥" }
+        return symbolPrefix[currency] ?? codePrefix[currency] ?? ""
+    }
+
+    private static func formatCurrencyRange(_ range: String,
+                                            prefix: String,
+                                            config: ChineseITNConfig) -> String {
+        let parts = range.components(separatedBy: config.rangeConnector)
+        if parts.count == 2 {
+            return "\(prefix)\(parts[0])\(config.rangeConnector)\(prefix)\(parts[1])"
+        }
+        return "\(prefix)\(range)"
+    }
+
+    static let tildeKeysSorted: [String] = SpecialCardinal.tildePairs.keys
+        .sorted { $0.count > $1.count }
+
+    /// Return all (form-string, lead-char, dash-key) matches at pos.
+    /// form-string = the part of the input consumed by the dash form.
+    private static func dashFormsAt(chars: [Character], pos: Int) -> [(String, String, String)] {
+        var results: [(String, String, String)] = []
+        let n = chars.count
+        let dashPairs2 = SpecialCardinal.dashPairs.keys.filter { $0.count == 2 }
+        let dashPairs3 = SpecialCardinal.dashPairs.keys.filter { $0.count == 3 }
+        let leadChars: Set<Character> = ["一","二","三","四","五","六","七","八","九","两"]
+
+        // 十 + 2-char pair
+        if pos < n, chars[pos] == "十" {
+            for key in dashPairs2 {
+                let endIdx = pos + 1 + key.count
+                if endIdx <= n,
+                   String(chars[(pos + 1)..<endIdx]) == key {
+                    results.append(("十\(key)", "", key))
+                }
+            }
+        }
+        // digit + 十 + 2-char pair
+        if pos + 1 < n, leadChars.contains(chars[pos]), chars[pos + 1] == "十" {
+            let leadStr = String(chars[pos])
+            for key in dashPairs2 {
+                let endIdx = pos + 2 + key.count
+                if endIdx <= n,
+                   String(chars[(pos + 2)..<endIdx]) == key {
+                    results.append(("\(leadStr)十\(key)", leadStr, key))
+                }
+            }
+        }
+        // digit + 百 + 3-char pair
+        if pos + 1 < n, leadChars.contains(chars[pos]), chars[pos + 1] == "百" {
+            let leadStr = String(chars[pos])
+            for key in dashPairs3 {
+                let endIdx = pos + 2 + key.count
+                if endIdx <= n,
+                   String(chars[(pos + 2)..<endIdx]) == key {
+                    results.append(("\(leadStr)百\(key)", leadStr, key))
+                }
+            }
+        }
+        return results
+    }
+
+    /// Match <cnCard>+元<cnDigit>(毛|角)[<cnDigit>分] and output ¥decimal.
+    private static func matchYuanJiaoFenSymbol(chars: [Character],
+                                               start: Int) -> (Int, String)? {
+        let n = chars.count
+        let cnCardSet = Set(cnCardinalClass)
+        var j = start
+        while j < n && cnCardSet.contains(chars[j]) { j += 1 }
+        guard j > start, j < n, chars[j] == "元" else { return nil }
+        let intStr = String(chars[start..<j])
+        guard let intVal = Cardinal.parseToInt(intStr) else { return nil }
+        var k = j + 1
+        guard k < n, let jiao = digitMap[chars[k]] else { return nil }
+        k += 1
+        guard k < n, chars[k] == "毛" || chars[k] == "角" else { return nil }
+        k += 1
+        // Optional fen
+        if k + 1 < n, let fen = digitMap[chars[k]], chars[k + 1] == "分" {
+            return (k + 2, "¥\(intVal).\(jiao)\(fen)")
+        }
+        return (k, "¥\(intVal).\(jiao)")
+    }
+
+    /// Match <cnCard>+元<cnDigit>(毛|角)[<cnDigit>分] and keep units suffix.
+    private static func matchYuanJiaoFenSuffix(chars: [Character],
+                                               start: Int,
+                                               config: ChineseITNConfig) -> (Int, String)? {
+        let n = chars.count
+        let cnCardSet = Set(cnCardinalClass)
+        var j = start
+        while j < n && cnCardSet.contains(chars[j]) { j += 1 }
+        guard j > start, j < n, chars[j] == "元" else { return nil }
+        let intStr = String(chars[start..<j])
+        guard let intOut = parseCurrencyUnitNumber(
+            intStr,
+            config: config,
+            allowSingleDigit: true
+        ) else { return nil }
+        var k = j + 1
+        guard k < n, let jiao = digitMap[chars[k]] else { return nil }
+        k += 1
+        guard k < n, chars[k] == "毛" || chars[k] == "角" else { return nil }
+        let jiaoUnit = chars[k]
+        k += 1
+        if k + 1 < n, let fen = digitMap[chars[k]], chars[k + 1] == "分" {
+            return (k + 2, "\(intOut)元\(jiao)\(jiaoUnit)\(fen)分")
+        }
+        return (k, "\(intOut)元\(jiao)\(jiaoUnit)")
+    }
+}
+
+// MARK: - Math tagger
+
+extension MathNormalize {
+
+    /// Emit candidates per WeText math.py: number + (operator + number)+
+    static func tag(_ chars: [Character],
+                    config: ChineseITNConfig) -> [Candidate] {
+        var out: [Candidate] = []
+        let n = chars.count
+
+        for i in 0..<n {
+            // Optional sign
+            var signLen = 0
+            var signOut = ""
+            if i + 1 < n {
+                let two = String(chars[i...(i + 1)])
+                if let s = Cardinal.signMap[two] { signLen = 2; signOut = s }
+            }
+            if signLen == 0, let s = Cardinal.signMap[String(chars[i])] {
+                signLen = 1; signOut = s
+            }
+
+            guard let first = matchMathNumber(chars: chars,
+                                              start: i + signLen,
+                                              config: config)
+            else { continue }
+
+            var output = "\(signOut)\(first.output)"
+            var cursor = first.endIdx
+
+            // (operator + number)+ — must have at least one
+            var pairCount = 0
+            while cursor < n {
+                // Try op at cursor (longest first)
+                var opMatched: (raw: String, op: String, len: Int)?
+                for opLen in [2, 1] {
+                    if cursor + opLen <= n {
+                        let opCand = String(chars[cursor..<(cursor + opLen)])
+                        if let op = operatorMap[opCand] {
+                            opMatched = (opCand, op, opLen)
+                            break
+                        }
+                    }
+                }
+                guard let opM = opMatched else { break }
+                let isRangeOperator = opM.raw == "到"
+                let nextStart = cursor + opM.len
+
+                // Optional sign on next number
+                var sLen = 0
+                var sOut = ""
+                if nextStart + 1 < n,
+                   let s = Cardinal.signMap[String(chars[nextStart...(nextStart + 1)])] {
+                    sLen = 2; sOut = s
+                }
+                if sLen == 0, nextStart < n,
+                   let s = Cardinal.signMap[String(chars[nextStart])] {
+                    sLen = 1; sOut = s
+                }
+
+                guard let next = isRangeOperator
+                        ? matchRangeNumber(chars: chars,
+                                           start: nextStart + sLen,
+                                           config: config)
+                        : matchMathNumber(chars: chars,
+                                          start: nextStart + sLen,
+                                          config: config)
+                else { break }
+                if pairCount == 0, isRangeOperator,
+                   let firstRangeOut = rangeNumberOutput(first.raw,
+                                                         config: config) {
+                    output = "\(signOut)\(firstRangeOut)"
+                }
+                let opOutput = isRangeOperator ? config.rangeConnector : opM.op
+                output += "\(opOutput)\(sOut)\(next.output)"
+                cursor = next.endIdx
+                pairCount += 1
+            }
+
+            if pairCount > 0 {
+                out.append(Candidate(
+                    startIdx: i,
+                    endIdx: cursor,
+                    output: output,
+                    weight: TaggerWeight.math,
+                    source: "math"
+                ))
+            }
+        }
+        return out
+    }
+
+    private static func matchMathNumber(chars: [Character],
+                                        start: Int,
+                                        config: ChineseITNConfig)
+        -> (endIdx: Int, output: String, raw: String)? {
+        let n = chars.count
+        let cnCardSet = Set(cnCardinalClass)
+        var end = start
+        while end < n && cnCardSet.contains(chars[end]) { end += 1 }
+        guard end > start else { return nil }
+
+        for candidateEnd in stride(from: end, through: start + 1, by: -1) {
+            let candidate = String(chars[start..<candidateEnd])
+            if let output = Cardinal.parseFSTNumber(
+                candidate,
+                config: config,
+                allowSingleDigit: true,
+                allowTerminalBareYiOrZhao: true
+            ) {
+                return (candidateEnd, output, candidate)
+            }
+        }
+        return nil
+    }
+
+    private static func matchRangeNumber(chars: [Character],
+                                         start: Int,
+                                         config: ChineseITNConfig)
+        -> (endIdx: Int, output: String, raw: String)? {
+        let n = chars.count
+        let cnCardSet = Set(cnCardinalClass)
+        var end = start
+        while end < n && cnCardSet.contains(chars[end]) { end += 1 }
+        guard end > start else { return nil }
+
+        for candidateEnd in stride(from: end, through: start + 1, by: -1) {
+            let candidate = String(chars[start..<candidateEnd])
+            if let output = rangeNumberOutput(candidate, config: config) {
+                return (candidateEnd, output, candidate)
+            }
+        }
+        return nil
+    }
+
+    private static func rangeNumberOutput(_ s: String,
+                                          config: ChineseITNConfig) -> String? {
+        if s.count == 1,
+           let first = s.first,
+           digitChars.contains(first),
+           !config.enable0To9 {
+            return s
+        }
+        if let kept = singleDigitMagnitudeOutput(s, convertDigit: config.enable0To9) {
+            return kept
+        }
+        return Cardinal.parseFSTNumber(
+            s,
+            config: config,
+            allowSingleDigit: config.enable0To9,
+            allowTerminalBareYiOrZhao: true
+        )
+    }
+
+    private static func singleDigitMagnitudeOutput(_ s: String,
+                                                   convertDigit: Bool) -> String? {
+        let chars = Array(s)
+        guard chars.count == 2,
+              let first = chars.first,
+              let last = chars.last,
+              digitChars.contains(first),
+              last == "万" || last == "萬" || last == "亿" || last == "億"
+        else { return nil }
+        let suffix = (last == "萬") ? "万" : (last == "億" ? "亿" : String(last))
+        if convertDigit, let d = digitMap[first] {
+            return "\(d)\(suffix)"
+        }
+        return "\(first)\(suffix)"
+    }
+}
+
+// MARK: - LicensePlate tagger
+
+extension LicensePlate {
+
+    static func tag(_ chars: [Character],
+                    config: ChineseITNConfig) -> [Candidate] {
+        var out: [Candidate] = []
+        let n = chars.count
+        let provinceSet = Set(provinceChars)
+
+        for i in 0..<n {
+            guard provinceSet.contains(chars[i]) else { continue }
+            // Next char must be alpha
+            guard i + 1 < n, chars[i + 1].isLetter,
+                  chars[i + 1].isASCII else { continue }
+            // Then 5-6 chars of (alpha | digit | cn-digit)
+            var body = ""
+            var bodyEnd = i + 2
+            while bodyEnd < n && body.count < 6 {
+                let ch = chars[bodyEnd]
+                if let d = digitMap[ch] {
+                    body.append(d)
+                    bodyEnd += 1
+                } else if ch.isASCII, ch.isLetter || ch.isNumber {
+                    body.append(ch)
+                    bodyEnd += 1
+                } else { break }
+            }
+            if body.count >= 5 && body.count <= 6 {
+                let alpha = String(chars[i + 1])
+                let prov = String(chars[i])
+                out.append(Candidate(
+                    startIdx: i,
+                    endIdx: bodyEnd,
+                    output: "\(prov)\(alpha)\(body)",
+                    weight: TaggerWeight.licensePlate,
+                    source: "license_plate"
+                ))
+            }
+        }
+        return out
+    }
+}
+
+// MARK: - Electronic tagger
+
+extension Electronic {
+
+    static func tag(_ chars: [Character],
+                    config: ChineseITNConfig) -> [Candidate] {
+        var out: [Candidate] = []
+        let n = chars.count
+        // "w w w 点 X 点 Y" pattern — server and TLD are letter runs.
+        // Pattern minimally: w SP w SP w SP 点 SP <server> SP 点 SP <tld>
+        // where server/tld are sequences of single alpha chars separated by spaces
+        // (or contiguous letter token).
+        for i in 0..<n {
+            // Match "w w w 点 "
+            guard i + 7 <= n else { continue }
+            let head = String(chars[i..<(i + 7)])
+            guard head == "w w w 点" else { continue }
+            // After head we have a space + server + space + 点 + space + tld
+            var cursor = i + 7
+            if cursor < n && chars[cursor] == " " { cursor += 1 }
+            // Server: alpha chars and spaces until next " 点 "
+            let serverStart = cursor
+            while cursor < n {
+                if cursor + 3 <= n && String(chars[cursor..<(cursor + 3)]) == " 点 " {
+                    break
+                }
+                let ch = chars[cursor]
+                if !(ch.isASCII && (ch.isLetter || ch == " ")) { break }
+                cursor += 1
+            }
+            guard cursor > serverStart,
+                  cursor + 3 <= n,
+                  String(chars[cursor..<(cursor + 3)]) == " 点 "
+            else { continue }
+            let serverRaw = String(chars[serverStart..<cursor])
+            cursor += 3
+            // TLD: alpha chars and spaces until non-alpha
+            let tldStart = cursor
+            while cursor < n {
+                let ch = chars[cursor]
+                if !(ch.isASCII && (ch.isLetter || ch == " ")) { break }
+                cursor += 1
+            }
+            guard cursor > tldStart else { continue }
+            let tldRaw = String(chars[tldStart..<cursor])
+            let server = serverRaw.replacingOccurrences(of: " ", with: "")
+            let tld = tldRaw.replacingOccurrences(of: " ", with: "")
+            out.append(Candidate(
+                startIdx: i,
+                endIdx: cursor,
+                output: "www.\(server).\(tld)",
+                weight: TaggerWeight.electronic,
+                source: "electronic"
+            ))
+        }
+        return out
+    }
+}
+
+// MARK: - SpecialCardinal helpers
+
+extension SpecialCardinal {
+
+    /// Return all matching dash forms at position `pos`. Each entry:
+    /// (form-char-length, lead-string, dash-key).
+    /// `lead` is empty for 十-prefix forms.
+    static func dashFormsAtPos(chars: [Character], pos: Int) -> [(Int, String, String)] {
+        var results: [(Int, String, String)] = []
+        let n = chars.count
+        let leadChars: Set<Character> = ["一","二","三","四","五","六","七","八","九","两"]
+        let dashKeys2 = dashPairs.keys.filter { $0.count == 2 }
+        let dashKeys3 = dashPairs.keys.filter { $0.count == 3 }
+
+        // 十 + 2-char pair
+        if pos < n, chars[pos] == "十" {
+            for key in dashKeys2 {
+                let kEnd = pos + 1 + key.count
+                if kEnd <= n,
+                   String(chars[(pos + 1)..<kEnd]) == key {
+                    results.append((1 + key.count, "", key))
+                }
+            }
+        }
+        // digit + 十 + 2-char pair
+        if pos + 1 < n, leadChars.contains(chars[pos]), chars[pos + 1] == "十" {
+            let leadStr = String(chars[pos])
+            for key in dashKeys2 {
+                let kEnd = pos + 2 + key.count
+                if kEnd <= n,
+                   String(chars[(pos + 2)..<kEnd]) == key {
+                    results.append((2 + key.count, leadStr, key))
+                }
+            }
+        }
+        // digit + 百 + 3-char pair
+        if pos + 1 < n, leadChars.contains(chars[pos]), chars[pos + 1] == "百" {
+            let leadStr = String(chars[pos])
+            for key in dashKeys3 {
+                let kEnd = pos + 2 + key.count
+                if kEnd <= n,
+                   String(chars[(pos + 2)..<kEnd]) == key {
+                    results.append((2 + key.count, leadStr, key))
+                }
+            }
+        }
+        return results
+    }
+}
+
+// MARK: - SpecialCardinal tagger
+
+extension SpecialCardinal {
+
+    /// special_tilde: key + optional 万/亿 — "三五百"→"300~500", "三四万"→"3~4万".
+    /// special_dash: 十+pair / digit+十+pair / digit+百+3-pair / digit+万+digit+digit.
+    static func tag(_ chars: [Character],
+                    config: ChineseITNConfig) -> [Candidate] {
+        var out: [Candidate] = []
+        let n = chars.count
+        let cnCardSet = Set(cnCardinalClass)
+        let leadChars: Set<Character> = ["一","二","三","四","五","六","七","八","九","两"]
+
+        // tilde keys sorted longest-first
+        let tildeKeys = tildePairs.keys.sorted { $0.count > $1.count }
+        let dashKeys2 = dashPairs.keys.filter { $0.count == 2 }.sorted()
+        let dashKeys3 = dashPairs.keys.filter { $0.count == 3 }.sorted()
+
+        for i in 0..<n {
+            // Boundary check: NOT preceded by cn-cardinal
+            if i > 0 && cnCardSet.contains(chars[i - 1]) { continue }
+
+            // 1. tilde: (key)(万/亿)?
+            // When enabled, emit the tilde-range output ("三五百"→"300~500").
+            // When disabled, emit the IDENTITY (input=output) over the
+            // same span so the lattice prefers the whole phrase verbatim
+            // over a half-conversion via Cardinal on a sub-span (e.g.
+            // "三五百" → "三500" because Cardinal can claim "五百"=500).
+            // Same source label either way so weight stays consistent.
+            for key in tildeKeys {
+                let kEnd = i + key.count
+                guard kEnd <= n,
+                      String(chars[i..<kEnd]) == key,
+                      let val = tildePairs[key] else { continue }
+                let keepStr = String(chars[i..<kEnd])
+                // No following cn-card unless 万/亿 suffix
+                if kEnd < n {
+                    let next = chars[kEnd]
+                    if next == "万" || next == "亿" || next == "萬" || next == "億" {
+                        let output = config.spokenRangeStyle == .expand
+                            ? "\(formatTildeRange(val, config: config))\(next)"
+                            : "\(keepStr)\(next)"
+                        out.append(Candidate(
+                            startIdx: i, endIdx: kEnd + 1,
+                            output: output,
+                            weight: TaggerWeight.specialCardinal,
+                            source: "special_tilde"
+                        ))
+                        continue
+                    }
+                    if cnCardSet.contains(next) { continue }
+                }
+                out.append(Candidate(
+                    startIdx: i, endIdx: kEnd,
+                    output: config.spokenRangeStyle == .expand
+                        ? formatTildeRange(val, config: config)
+                        : keepStr,
+                    weight: TaggerWeight.specialCardinal,
+                    source: "special_tilde"
+                ))
+            }
+
+            // 2. dash 十 + 2-char pair (+ optional 万/亿)
+            if i < n, chars[i] == "十" {
+                for key in dashKeys2 {
+                    let kEnd = i + 1 + key.count
+                    guard kEnd <= n,
+                          String(chars[(i + 1)..<kEnd]) == key,
+                          let val = dashPairs[key] else { continue }
+                    var endIdx = kEnd
+                    var suffix = ""
+                    if endIdx < n {
+                        let next = chars[endIdx]
+                        if next == "万" || next == "亿" || next == "萬" || next == "億" {
+                            suffix = String(next); endIdx += 1
+                        } else if cnCardSet.contains(next) { continue }
+                    }
+                    out.append(Candidate(
+                        startIdx: i, endIdx: endIdx,
+                        output: config.spokenRangeStyle == .expand
+                            ? "\(formatDashRange("1\(val)", config: config))\(suffix)"
+                            : String(chars[i..<endIdx]),
+                        weight: TaggerWeight.specialCardinal,
+                        source: "special_dash_shi"
+                    ))
+                }
+            }
+
+            // 3. dash digit + 十 + 2-pair
+            if i + 1 < n, leadChars.contains(chars[i]), chars[i + 1] == "十" {
+                guard let lead = digitMap[chars[i]] else { continue }
+                for key in dashKeys2 {
+                    let kEnd = i + 2 + key.count
+                    guard kEnd <= n,
+                          String(chars[(i + 2)..<kEnd]) == key,
+                          let val = dashPairs[key] else { continue }
+                    var endIdx = kEnd
+                    var suffix = ""
+                    if endIdx < n {
+                        let next = chars[endIdx]
+                        if next == "万" || next == "亿" || next == "萬" || next == "億" {
+                            suffix = String(next); endIdx += 1
+                        } else if cnCardSet.contains(next) { continue }
+                    }
+                    out.append(Candidate(
+                        startIdx: i, endIdx: endIdx,
+                        output: config.spokenRangeStyle == .expand
+                            ? "\(formatDashRange("\(lead)\(val)", config: config))\(suffix)"
+                            : String(chars[i..<endIdx]),
+                        weight: TaggerWeight.specialCardinal,
+                        source: "special_dash_digit_shi"
+                    ))
+                }
+            }
+
+            // 4. dash digit + 百 + 3-pair
+            if i + 1 < n, leadChars.contains(chars[i]), chars[i + 1] == "百" {
+                guard let lead = digitMap[chars[i]] else { continue }
+                for key in dashKeys3 {
+                    let kEnd = i + 2 + key.count
+                    guard kEnd <= n,
+                          String(chars[(i + 2)..<kEnd]) == key,
+                          let val = dashPairs[key] else { continue }
+                    var endIdx = kEnd
+                    var suffix = ""
+                    if endIdx < n {
+                        let next = chars[endIdx]
+                        if next == "万" || next == "亿" || next == "萬" || next == "億" {
+                            suffix = String(next); endIdx += 1
+                        } else if cnCardSet.contains(next) { continue }
+                    }
+                    out.append(Candidate(
+                        startIdx: i, endIdx: endIdx,
+                        output: config.spokenRangeStyle == .expand
+                            ? "\(formatDashRange("\(lead)\(val)", config: config))\(suffix)"
+                            : String(chars[i..<endIdx]),
+                        weight: TaggerWeight.specialCardinal,
+                        source: "special_dash_digit_bai"
+                    ))
+                }
+            }
+
+            // 5. dash digit + 万 + digit + digit
+            if i + 3 < n, leadChars.contains(chars[i]),
+               chars[i + 1] == "万",
+               leadChars.contains(chars[i + 2]),
+               leadChars.contains(chars[i + 3]) {
+                if let lead = digitMap[chars[i]],
+                   let d2 = digitMap[chars[i + 2]],
+                   let d3 = digitMap[chars[i + 3]] {
+                    if i + 4 >= n || !cnCardSet.contains(chars[i + 4]) {
+                        out.append(Candidate(
+                            startIdx: i, endIdx: i + 4,
+                            output: config.spokenRangeStyle == .expand
+                                ? formatDashRange("\(lead)\(d2)000-\(d3)000",
+                                                  config: config)
+                                : String(chars[i..<(i + 4)]),
+                            weight: TaggerWeight.specialCardinal,
+                            source: "special_dash_wan"
+                        ))
+                    }
+                }
+            }
+        }
+        return out
+    }
+}
+
+// MARK: - Measure tagger
+
+extension Measure {
+
+    /// Emit candidates per WeText measure.py:
+    ///   measure = number + (to + number).ques + units
+    ///   tagger |= delete("每") + units + measure   (前置每)
+    ///   measure_sp = digit + (百|千|万) + addzero + digit + unit_sp_case1
+    static func tag(_ chars: [Character],
+                    config: ChineseITNConfig) -> [Candidate] {
+        var out: [Candidate] = []
+        let n = chars.count
+        let cnCardSet = Set(cnCardinalClass)
+        let cnDigitSet = Set(cnDigitClass)
+        let units = unitsSortedLongestFirst
+
+        for i in 0..<n {
+            // Boundary: not preceded by cn-cardinal
+            let lookbehindOK = (i == 0) || !cnCardSet.contains(chars[i - 1])
+
+            // ─── Standard: (number)(unit) and (number)到(number)(unit)
+            if lookbehindOK {
+                // Find cn-card run [i..j)
+                var j = i
+                while j < n && cnCardSet.contains(chars[j]) { j += 1 }
+                if j > i {
+                    // Iterate num-span end positions from SHORTEST to
+                    // longest. The shorter num leaves more chars for a
+                    // longer unit prefix — emitted first so the lattice
+                    // picks longer-unit candidates on tie-cost (mirrors
+                    // WeText FST's `add_weight(units_en, -1.0)` bonus
+                    // for multi-char unit names).
+                    for numEnd in (i + 1)...j {
+                        let numStr = String(chars[i..<numEnd])
+                        emitMeasureCandidates(
+                            chars: chars, n: n,
+                            startIdx: i, numEnd: numEnd, numStr: numStr,
+                            units: units, config: config, out: &out
+                        )
+                        // Decimal: numStr + 点 + cnDigits + unit
+                        if numEnd < n && (chars[numEnd] == "点" || chars[numEnd] == "點") {
+                            var k = numEnd + 1
+                            while k < n && cnDigitSet.contains(chars[k]) { k += 1 }
+                            if k > numEnd + 1 {
+                                let fracStr = String(chars[(numEnd + 1)..<k])
+                                let fracDigits = fracStr.compactMap { digitMap[$0] }
+                                if fracDigits.count == fracStr.count,
+                                   let intV = Cardinal.parseToInt(numStr) {
+                                    let valStr = "\(intV).\(String(fracDigits))"
+                                    emitWithUnit(
+                                        chars: chars, n: n,
+                                        startIdx: i, valueEnd: k, valueStr: valStr,
+                                        units: units, out: &out, source: "measure_decimal",
+                                        config: config
+                                    )
+                                }
+                            }
+                        }
+                        // Range: numStr + 到 + numStr2 + unit
+                        if numEnd < n && chars[numEnd] == "到" {
+                            let rStart = numEnd + 1
+                            var k = rStart
+                            while k < n && cnCardSet.contains(chars[k]) { k += 1 }
+                            // Iterate second num span SHORTEST first
+                            // so longer unit prefix wins on tie cost.
+                            if k > rStart {
+                                for kEnd in (rStart + 1)...k {
+                                    let n2Str = String(chars[rStart..<kEnd])
+                                    if let v1 = parseMeasureRangeEndpoint(numStr, config: config),
+                                       let v2 = parseMeasureRangeEndpoint(n2Str, config: config) {
+                                        let valStr = "\(v1)\(config.rangeConnector)\(v2)"
+                                        emitWithUnit(
+                                            chars: chars, n: n,
+                                            startIdx: i, valueEnd: kEnd, valueStr: valStr,
+                                            units: units, out: &out, source: "measure_range",
+                                            config: config
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // ─── 每X前置: 每 + unit_denom + num + (到 + num)? + unit_numer
+            if i < n && chars[i] == "每" {
+                for denomUnit in units {
+                    let dStart = i + 1
+                    let dEnd = dStart + denomUnit.count
+                    guard dEnd <= n,
+                          String(chars[dStart..<dEnd]) == denomUnit else { continue }
+                    guard let denomEN = resolveUnit(denomUnit, config: config)
+                          else { continue }
+
+                    // Find max cn-card run
+                    var j = dEnd
+                    while j < n && cnCardSet.contains(chars[j]) { j += 1 }
+                    if j == dEnd { continue }
+
+                    // Iterate num span length SHORTEST first
+                    for numEnd in (dEnd + 1)...j {
+                        let firstNumStr = String(chars[dEnd..<numEnd])
+                        guard let v1 = parseMeasureNumber(firstNumStr, config: config) else { continue }
+
+                        // Optional 到 + second num
+                        var ranges: [(end: Int, valueStr: String)] = [
+                            (numEnd, v1)
+                        ]
+                        if numEnd < n && chars[numEnd] == "到" {
+                            let rStart = numEnd + 1
+                            var k = rStart
+                            while k < n && cnCardSet.contains(chars[k]) { k += 1 }
+                            if k > rStart {
+                                for kEnd in (rStart + 1)...k {
+                                    let n2Str = String(chars[rStart..<kEnd])
+                                    if let v2 = parseMeasureNumber(n2Str, config: config) {
+                                        ranges.append((kEnd, "\(v1)\(config.rangeConnector)\(v2)"))
+                                    }
+                                }
+                            }
+                        }
+
+                        // For each range endpoint, try numerator unit
+                        for (rangeEnd, valueStr) in ranges {
+                            for numerUnit in units {
+                                let nuEnd = rangeEnd + numerUnit.count
+                                guard nuEnd <= n,
+                                      String(chars[rangeEnd..<nuEnd]) == numerUnit
+                                else { continue }
+                                guard let numerEN = resolveUnit(numerUnit, config: config)
+                                      else { continue }
+                                out.append(Candidate(
+                                    startIdx: i, endIdx: nuEnd,
+                                    output: "\(valueStr)\(unitSep(numerEN))\(numerEN)/\(denomEN)",
+                                    weight: TaggerWeight.measure,
+                                    source: "measure_per_prefix"
+                                ))
+                            }
+                        }
+                    }
+                }
+            }
+
+            // ─── Tilde key + (万|亿)? + unit → "X~Y[万/亿]unit"
+            // Try "unit subsumes 万/亿" path FIRST (e.g. 万伏特 → Wv),
+            // then "万/亿 kept as plain suffix" path (e.g. 万吨 → 万吨).
+            // Earlier-emitted candidate wins on tie cost.
+            if lookbehindOK && config.spokenRangeStyle == .expand {
+                for tildeKey in SpecialCardinal.tildePairs.keys.sorted(by: { $0.count > $1.count }) {
+                    let tEnd = i + tildeKey.count
+                    guard tEnd <= n,
+                          String(chars[i..<tEnd]) == tildeKey,
+                          let tildeVal = SpecialCardinal.tildePairs[tildeKey] else { continue }
+                    let rangeValue = SpecialCardinal.formatTildeRange(tildeVal, config: config)
+                    // Path A: unit claims 万/亿 prefix (multi-char unit)
+                    for unit in units where unit.count >= 2 {
+                        let uEnd = tEnd + unit.count
+                        guard uEnd <= n,
+                              String(chars[tEnd..<uEnd]) == unit,
+                              let unitOut = resolveUnit(unit, config: config) else { continue }
+                        out.append(Candidate(
+                            startIdx: i, endIdx: uEnd,
+                            output: "\(rangeValue)\(unitSep(unitOut))\(unitOut)",
+                            weight: TaggerWeight.measure,
+                            source: "measure_tilde_unit"
+                        ))
+                    }
+                    // Path B: 万/亿 stays as plain Chinese suffix, then unit
+                    if tEnd < n {
+                        let c = chars[tEnd]
+                        if c == "万" || c == "亿" || c == "萬" || c == "億" {
+                            for unit in units {
+                                let uEnd = tEnd + 1 + unit.count
+                                guard uEnd <= n,
+                                      String(chars[(tEnd + 1)..<uEnd]) == unit,
+                                      let unitOut = resolveUnit(unit, config: config) else { continue }
+                                out.append(Candidate(
+                                    startIdx: i, endIdx: uEnd,
+                                    output: "\(rangeValue)\(c)\(unitSep(unitOut))\(unitOut)",
+                                    weight: TaggerWeight.measure,
+                                    source: "measure_tilde_suffix_unit"
+                                ))
+                            }
+                        }
+                    }
+                    // Path C: no suffix, just (tilde)(unit) — single-char units etc.
+                    for unit in units where unit.count == 1 {
+                        let uEnd = tEnd + unit.count
+                        guard uEnd <= n,
+                              String(chars[tEnd..<uEnd]) == unit,
+                              let unitOut = resolveUnit(unit, config: config) else { continue }
+                        out.append(Candidate(
+                            startIdx: i, endIdx: uEnd,
+                            output: "\(rangeValue)\(unitSep(unitOut))\(unitOut)",
+                            weight: TaggerWeight.measure,
+                            source: "measure_tilde_unit"
+                        ))
+                    }
+                }
+            }
+
+            // ─── Dash forms + unit
+            if lookbehindOK {
+                let dashForms = SpecialCardinal.dashFormsAtPos(chars: chars, pos: i)
+                for (formLen, lead, key) in dashForms {
+                    guard let dashVal = SpecialCardinal.dashPairs[key] else { continue }
+                    let leadStr: String
+                    if lead.isEmpty {
+                        leadStr = "1"  // 十-prefix case
+                    } else if let l = digitMap[lead.first!] {
+                        leadStr = String(l)
+                    } else { continue }
+                    let formEnd = i + formLen
+                    for unit in units {
+                        let uEnd = formEnd + unit.count
+                        guard uEnd <= n,
+                              String(chars[formEnd..<uEnd]) == unit,
+                              let unitOut = resolveUnit(unit, config: config) else { continue }
+                        let output = config.spokenRangeStyle == .expand
+                            ? "\(SpecialCardinal.formatDashRange("\(leadStr)\(dashVal)", config: config))\(unitSep(unitOut))\(unitOut)"
+                            : String(chars[i..<uEnd])
+                        out.append(Candidate(
+                            startIdx: i, endIdx: uEnd,
+                            output: output,
+                            weight: TaggerWeight.measure,
+                            source: "measure_dash_unit"
+                        ))
+                    }
+                }
+            }
+
+            // ─── unit_sp_case1: digit + (百|千|万) + digit + 量词
+            if lookbehindOK, i + 3 < n {
+                let d1 = chars[i]
+                let mag = chars[i + 1]
+                let d2 = chars[i + 2]
+                guard "一二三四五六七八九".contains(d1),
+                      "百千万".contains(mag),
+                      "一二三四五六七八九".contains(d2),
+                      let d1Arabic = digitMap[d1],
+                      let d2Arabic = digitMap[d2] else { continue }
+                let unitSpStart = i + 3
+                for spUnit in unitSpCase1 {
+                    let usEnd = unitSpStart + spUnit.count
+                    guard usEnd <= n,
+                          String(chars[unitSpStart..<usEnd]) == spUnit else { continue }
+                    let zeros: String
+                    switch mag {
+                    case "百": zeros = "00"
+                    case "千": zeros = "000"
+                    case "万": zeros = "0000"
+                    default: zeros = ""
+                    }
+                    out.append(Candidate(
+                        startIdx: i, endIdx: usEnd,
+                        output: "\(d1Arabic)\(zeros)\(d2Arabic)\(spUnit)",
+                        weight: TaggerWeight.measure,
+                        source: "measure_sp_case1"
+                    ))
+                    break
+                }
+            }
+        }
+        return out
+    }
+
+    /// unit_sp_case1 list (WeText measure.py:78).
+    static let unitSpCase1: [String] = [
+        "年", "月", "个月", "周", "天", "位", "次", "个", "顿",
+    ]
+
+    /// Emit measure candidates for cardinal number + unit.
+    /// For multi-segment numbers (一亿X / X兆Y), prefer
+    /// `Cardinal.parse` output which keeps 亿/万 as text.
+    private static func emitMeasureCandidates(
+        chars: [Character], n: Int,
+        startIdx: Int, numEnd: Int, numStr: String,
+        units: [String], config: ChineseITNConfig,
+        out: inout [Candidate]
+    ) {
+        // Single-digit + unit guard under !enable_0_to_9
+        let isSingleDigit = numStr.count == 1 &&
+            digitChars.contains(numStr.first!)
+        if !config.enable0To9 && isSingleDigit && config.unitOutputStyle == .chinese {
+            emitWithUnit(
+                chars: chars, n: n,
+                startIdx: startIdx, valueEnd: numEnd, valueStr: numStr,
+                units: units, out: &out, source: "measure_identity",
+                config: config
+            )
+            return
+        }
+
+        guard let v = parseMeasureNumber(numStr, config: config) else { return }
+        emitWithUnit(
+            chars: chars, n: n,
+            startIdx: startIdx, valueEnd: numEnd, valueStr: v,
+            units: units, out: &out, source: "measure_cardinal",
+            config: config
+        )
+    }
+
+    private static func parseMeasureNumber(_ s: String,
+                                           config: ChineseITNConfig) -> String? {
+        Cardinal.parseFSTNumber(
+            s,
+            config: config,
+            allowSingleDigit: config.enable0To9 || config.unitOutputStyle == .symbol,
+            allowTerminalBareYiOrZhao: config.enable0To9 || config.unitOutputStyle == .symbol
+        )
+    }
+
+    private static func parseMeasureRangeEndpoint(_ s: String,
+                                                  config: ChineseITNConfig) -> String? {
+        if s.count == 1,
+           let first = s.first,
+           digitChars.contains(first),
+           !config.enable0To9,
+           config.unitOutputStyle == .chinese {
+            return s
+        }
+        if let kept = singleDigitMagnitudeOutput(
+            s,
+            convertDigit: config.enable0To9 || config.unitOutputStyle == .symbol
+        ) {
+            return kept
+        }
+        return Cardinal.parseFSTNumber(
+            s,
+            config: config,
+            allowSingleDigit: config.enable0To9 || config.unitOutputStyle == .symbol,
+            allowTerminalBareYiOrZhao: true
+        )
+    }
+
+    private static func singleDigitMagnitudeOutput(_ s: String,
+                                                   convertDigit: Bool) -> String? {
+        let chars = Array(s)
+        guard chars.count == 2,
+              let first = chars.first,
+              let last = chars.last,
+              digitChars.contains(first),
+              last == "万" || last == "萬" || last == "亿" || last == "億"
+        else { return nil }
+        let suffix = (last == "萬") ? "万" : (last == "億" ? "亿" : String(last))
+        if convertDigit, let d = digitMap[first] {
+            return "\(d)\(suffix)"
+        }
+        return "\(first)\(suffix)"
+    }
+
+    private static func emitWithUnit(
+        chars: [Character], n: Int,
+        startIdx: Int, valueEnd: Int, valueStr: String,
+        units: [String], out: inout [Candidate], source: String,
+        config: ChineseITNConfig
+    ) {
+        for unit in units {
+            let uEnd = valueEnd + unit.count
+            guard uEnd <= n,
+                  String(chars[valueEnd..<uEnd]) == unit else { continue }
+            guard let unitOut = resolveUnit(unit, config: config) else { continue }
+            out.append(Candidate(
+                startIdx: startIdx, endIdx: uEnd,
+                output: "\(valueStr)\(unitSep(unitOut))\(unitOut)",
+                weight: TaggerWeight.measure,
+                source: source
+            ))
+            // Note: longest-first iteration; emit first match per unit then continue
+            // to allow shorter alternatives too (lattice picks).
+        }
+
+        guard valueEnd < n,
+              let prefixOut = magnitudePrefixOutput(chars[valueEnd]) else {
+            return
+        }
+        let unitStart = valueEnd + 1
+        for unit in units {
+            let uEnd = unitStart + unit.count
+            guard uEnd <= n,
+                  String(chars[unitStart..<uEnd]) == unit,
+                  let unitOut = resolveUnit(unit, config: config)
+            else { continue }
+            let prefixedUnitOut: String
+            if isChineseKeptUnit(unitOut) {
+                prefixedUnitOut = "\(chars[valueEnd])\(unitOut)"
+            } else {
+                prefixedUnitOut = "\(prefixOut)\(unitOut)"
+            }
+            out.append(Candidate(
+                startIdx: startIdx,
+                endIdx: uEnd,
+                output: "\(valueStr)\(unitSep(prefixedUnitOut))\(prefixedUnitOut)",
+                weight: TaggerWeight.measure,
+                source: "\(source)_prefixed_unit"
+            ))
+        }
+    }
+
+    private static func magnitudePrefixOutput(_ ch: Character) -> String? {
+        switch ch {
+        case "万", "萬": return "W"
+        case "亿", "億": return "00M"
+        case "兆": return "T"
+        default: return nil
+        }
+    }
+
+    private static func isChineseKeptUnit(_ unitOut: String) -> Bool {
+        guard let first = unitOut.unicodeScalars.first else { return false }
+        return first.value >= 0x4E00 && first.value <= 0x9FFF
+    }
+}
+
+// MARK: - Time tagger
+
+extension TimeNormalize {
+
+    /// Emit time candidates: (noon)? + hour + minute + (分)? + second?.
+    /// minute is required per WeText time.py:35. No cn-cardinal
+    /// lookbehind — the lattice handles that via global cost.
+    static func tag(_ chars: [Character],
+                    config: ChineseITNConfig) -> [Candidate] {
+        var out: [Candidate] = []
+        for i in 0..<chars.count {
+            guard let match = matchAt(chars: chars, start: i, config: config)
+            else { continue }
+            out.append(Candidate(
+                startIdx: i,
+                endIdx: match.endIdx,
+                output: match.output,
+                weight: TaggerWeight.time,
+                source: "time"
+            ))
+        }
+        return out
+    }
+
+    static func matchAt(chars: [Character],
+                        start: Int,
+                        config: ChineseITNConfig) -> (endIdx: Int, output: String)? {
+        let n = chars.count
+        guard start < n else { return nil }
+
+        var noonLen = 0
+        var noonOriginal = ""
+        var noonOut = ""
+        for noonKey in noonMapKeys {
+            if start + noonKey.count <= n {
+                let candidate = String(chars[start..<(start + noonKey.count)])
+                if candidate == noonKey {
+                    noonLen = noonKey.count
+                    noonOriginal = candidate
+                    noonOut = noonMapLocal[noonKey] ?? ""
+                    break
+                }
+            }
+        }
+        let hourStart = start + noonLen
+
+        var hourMatch: (key: String, len: Int)?
+        for hourKey in hourMapKeys {
+            if hourStart + hourKey.count <= n {
+                let candidate = String(chars[hourStart..<(hourStart + hourKey.count)])
+                if candidate == hourKey {
+                    hourMatch = (hourKey, hourKey.count)
+                    break
+                }
+            }
+        }
+        guard let hourM = hourMatch else { return nil }
+        let minuteStart = hourStart + hourM.len
+
+        var minuteMatch: (key: String, len: Int)?
+        for minuteKey in minuteMapKeys {
+            if minuteStart + minuteKey.count <= n {
+                let candidate = String(chars[minuteStart..<(minuteStart + minuteKey.count)])
+                if candidate == minuteKey {
+                    minuteMatch = (minuteKey, minuteKey.count)
+                    break
+                }
+            }
+        }
+        guard let minuteM = minuteMatch else { return nil }
+        var endIdx = minuteStart + minuteM.len
+
+        if endIdx < n && chars[endIdx] == "分" {
+            endIdx += 1
+        }
+
+        var secondOut = ""
+        for secondKey in secondMapKeys {
+            if endIdx + secondKey.count <= n {
+                let candidate = String(chars[endIdx..<(endIdx + secondKey.count)])
+                if candidate == secondKey {
+                    secondOut = secondMap[secondKey] ?? ""
+                    endIdx += secondKey.count
+                    break
+                }
+            }
+        }
+
+        guard let hOut = hourMap[hourM.key],
+              let mOut = minuteMap[minuteM.key] else { return nil }
+        let original = String(chars[start..<endIdx])
+        let output = formattedTime(
+            hour: hOut,
+            minute: mOut,
+            second: secondOut.isEmpty ? nil : secondOut,
+            noonOriginal: noonOriginal,
+            noonEnglish: noonOut,
+            original: original,
+            config: config
+        )
+        return (endIdx, output)
+    }
+
+    private static func formattedTime(hour: String,
+                                      minute: String,
+                                      second: String?,
+                                      noonOriginal: String,
+                                      noonEnglish: String,
+                                      original: String,
+                                      config: ChineseITNConfig) -> String {
+        switch config.temporalOutputStyle {
+        case .compactNumeric:
+            var output = "\(hour):\(minute)"
+            if let second { output += ":\(second)" }
+            if config.enableTimeEnglishMapping, !noonEnglish.isEmpty {
+                // NIST SP 811 §10.3: a.m./p.m. is separated from the
+                // time by a space ("3:45 p.m.").
+                output += " \(noonEnglish)"
+            } else {
+                output = noonOriginal + output
+            }
+            return output
+        case .chineseNumeric:
+            var output = "\(noonOriginal)\(hour)点\(minute)分"
+            if let second { output += "\(second)秒" }
+            return output
+        case .spokenChinese:
+            return original
+        }
+    }
+
+    static let hourMapKeys: [String] = hourMap.keys.sorted { $0.count > $1.count }
+    static let minuteMapKeys: [String] = minuteMap.keys.sorted { $0.count > $1.count }
+    static let secondMapKeys: [String] = secondMap.keys.filter { !$0.isEmpty }
+        .sorted { $0.count > $1.count }
+    static let noonMapKeys: [String] = noonMap.keys.sorted { $0.count > $1.count }
+}
+
+// MARK: - Cardinal tagger
+
+extension Cardinal {
+
+    /// Emit candidate edges for cardinal runs in `chars`. A "cardinal
+    /// run" is a maximal sequence of cn-cardinal-class chars (digits +
+    /// 十/百/千/万/亿) optionally preceded by a sign marker (正/负/etc).
+    /// For each run, try to parse it into an Arabic value; also try
+    /// shorter prefixes so the lattice can prefer split parses when
+    /// they yield lower total cost (e.g. "三百九十九三" → 399 + 3).
+    static func tag(_ chars: [Character],
+                    config: ChineseITNConfig) -> [Candidate] {
+        // WeText `enable_standalone_number=False`: the Cardinal tagger
+        // is dropped from the FST union entirely. Standalone cardinal
+        // expressions stay in Chinese. Measure / Money / Fraction etc.
+        // still emit their own candidates that internally consume
+        // cardinals, so unit-bound numbers still work.
+        if !config.enableStandaloneNumber { return [] }
+
+        var out: [Candidate] = []
+        let n = chars.count
+        let cnCardSet = Set(cnCardinalClass)
+
+        var i = 0
+        while i < n {
+            // Optional sign prefix at position i
+            var signLen = 0
+            var signOut = ""
+            if i + 1 < n {
+                let two = String(chars[i...i+1])
+                if let s = signMap[two] { signLen = 2; signOut = s }
+            }
+            if signLen == 0, let s = signMap[String(chars[i])] {
+                signLen = 1; signOut = s
+            }
+            let runStart = i + signLen
+
+            // Find end of cn-cardinal run starting at runStart
+            var j = runStart
+            while j < n && cnCardSet.contains(chars[j]) { j += 1 }
+            if j == runStart {
+                i += 1  // no cardinal run here
+                continue
+            }
+
+            // Try every prefix length from longest to shortest, emit
+            // a candidate for each that parses. The lattice picks.
+            for endIdx in stride(from: j, through: runStart + 1, by: -1) {
+                let run = String(chars[runStart..<endIdx])
+                if let parsed = parseOne(run, config: config) {
+                    out.append(Candidate(
+                        startIdx: i,
+                        endIdx: endIdx,
+                        output: signOut + parsed,
+                        weight: TaggerWeight.cardinal,
+                        source: "cardinal"
+                    ))
+                }
+            }
+
+            // Multi-cardinal split (WeText `cardinal + (insert(" ") +
+            // cardinal).star`). For a pure-digit run that can be split
+            // into multiple valid-length cardinals (3/4/5/11/18 each),
+            // emit a single combined candidate with space separator.
+            // Cost matches single-cardinal weight so it beats the
+            // multi-edge path on cost.
+            if j > runStart,
+               String(chars[runStart..<j]).allSatisfy({ digitChars.contains($0) }) {
+                let runChars = Array(chars[runStart..<j])
+                if let joined = splitIntoValidCardinals(runChars) {
+                    out.append(Candidate(
+                        startIdx: i,
+                        endIdx: j,
+                        output: signOut + joined,
+                        weight: TaggerWeight.cardinal,
+                        source: "cardinal_multi"
+                    ))
+                }
+            }
+
+            // ID-card form: 17 digit chars + "X"/"x" suffix. WeText
+            // cardinal.py line 159: `(digits**17 + idcard_last_char)`.
+            if j == runStart + 17,
+               j < n,
+               (chars[j] == "X" || chars[j] == "x"),
+               String(chars[runStart..<j]).allSatisfy({ digitChars.contains($0) }) {
+                let arabic = String(chars[runStart..<j].map { digitMap[$0]! })
+                out.append(Candidate(
+                    startIdx: i,
+                    endIdx: j + 1,
+                    output: "\(signOut)\(arabic)\(chars[j])",
+                    weight: TaggerWeight.cardinal,
+                    source: "cardinal_idcard"
+                ))
+            }
+
+            i = max(i + 1, runStart + 1)
+        }
+        return out
+    }
+
+    /// Split a pure-digit run into a sequence of valid-length cardinals
+    /// (each length in {3,4,5,11,18}). Returns the joined Arabic output
+    /// with " " between segments, or nil if no clean split exists.
+    private static func splitIntoValidCardinals(_ chars: [Character]) -> String? {
+        let allowed: [Int] = [11, 18, 5, 4, 3]
+        // DP: dp[i] = best (fewest-segments, output) covering chars[0..<i].
+        var dp: [String?] = Array(repeating: nil, count: chars.count + 1)
+        dp[0] = ""
+        for i in 1...chars.count {
+            for len in allowed where len <= i {
+                if let prev = dp[i - len] {
+                    let segChars = chars[(i - len)..<i]
+                    let arabic = String(segChars.map { digitMap[$0]! })
+                    let joined = prev.isEmpty ? arabic : prev + " " + arabic
+                    if dp[i] == nil { dp[i] = joined }
+                }
+            }
+        }
+        guard let result = dp[chars.count], !result.isEmpty,
+              result.contains(" ") else { return nil }
+        return result
+    }
+
+    /// Parse a single cardinal run respecting the config. Returns
+    /// arabic output string, or nil if not parseable as a single
+    /// cardinal.
+    private static func parseOne(_ s: String,
+                                 config: ChineseITNConfig) -> String? {
+        parseFSTNumber(
+            s,
+            config: config,
+            allowSingleDigit: config.enable0To9,
+            allowTerminalBareYiOrZhao: config.enable0To9
+        )
+    }
+}
+
+// MARK: - Decimal tagger
+
+extension Decimal {
+
+    /// Emit decimal candidates: "X点Y" where X is a cardinal expression
+    /// and Y is digit-by-digit chars. Also emits IP-form (X点Y点Z...).
+    static func tag(_ chars: [Character],
+                    config: ChineseITNConfig) -> [Candidate] {
+        var out: [Candidate] = []
+        let n = chars.count
+        let cnCardSet = Set(cnCardinalClass)
+        let cnDigitSet = Set(cnDigitClass)
+
+        var i = 0
+        while i < n {
+            // Optional sign at i
+            var signLen = 0
+            var signOut = ""
+            if let s = Cardinal.signMap[String(chars[i])] {
+                signLen = 1; signOut = s
+            }
+            if i + 1 < n,
+               let s2 = Cardinal.signMap[String(chars[i...i+1])] {
+                signLen = 2; signOut = s2
+            }
+            let intStart = i + signLen
+
+            // Cardinal integer part: greedy cnCard run
+            var j = intStart
+            while j < n && cnCardSet.contains(chars[j]) { j += 1 }
+            if j == intStart || j >= n {
+                i += 1; continue
+            }
+            // Separator is either 点 (decimal) or 杠 (identifier/range).
+            // The right-side scan and emit format differ per separator,
+            // but the int-side and lattice-emission boilerplate is the
+            // same — both are X<sep>Y forms anchored by the separator
+            // and produce Arabic <X><joiner><Y> output.
+            let sep = chars[j]
+            let isDecimal = (sep == "点" || sep == "點")
+            let isDash = (sep == "杠")
+            if !isDecimal && !isDash {
+                i += 1; continue
+            }
+            let sepIdx = j
+            // Right side: digit-only for decimal (matches WeText
+            // `(dot + digits.plus)`), full cnCard for dash (so
+            // "三杠二十三" → "3-23" with positional 23).
+            let rightCharSet = isDecimal ? cnDigitSet : cnCardSet
+            var k = sepIdx + 1
+            while k < n && rightCharSet.contains(chars[k]) { k += 1 }
+            if k == sepIdx + 1 {
+                i += 1; continue
+            }
+
+            let intStrFull = String(chars[intStart..<sepIdx])
+            let rightStrFull = String(chars[(sepIdx + 1)..<k])
+
+            if let intVal = parseIntFlexible(intStrFull, config: config) {
+                if isDecimal {
+                    let fracDigits = rightStrFull.compactMap { digitMap[$0] }
+                    if fracDigits.count == rightStrFull.count {
+                        out.append(Candidate(
+                            startIdx: i,
+                            endIdx: k,
+                            output: "\(signOut)\(intVal).\(String(fracDigits))",
+                            weight: TaggerWeight.cardinal,
+                            source: "decimal"
+                        ))
+                    }
+                } else {
+                    // X杠Y dash form. Right side: try positional /
+                    // multi-char cardinal first (e.g. 二十三 → 23);
+                    // if that fails, try digit-stream (e.g. 一二 → 12,
+                    // for ASR-style version numbers).
+                    let rightVal = parseIntFlexible(rightStrFull, config: config)
+                        ?? (rightStrFull.allSatisfy { digitChars.contains($0) }
+                            ? String(rightStrFull.compactMap { digitMap[$0] })
+                            : nil)
+                    if let r = rightVal {
+                        out.append(Candidate(
+                            startIdx: i,
+                            endIdx: k,
+                            output: "\(signOut)\(intVal)-\(r)",
+                            weight: TaggerWeight.cardinal,
+                            source: "dash_connector"
+                        ))
+                    }
+                }
+            }
+
+            // IP form: multiple 点-separated digit segments. Only emit
+            // if the original sequence has ≥2 dots at the cnDigit
+            // level. We re-scan for that pattern from intStart.
+            if let (ipEnd, ipOut) = tryIPForm(chars: chars,
+                                              start: intStart) {
+                out.append(Candidate(
+                    startIdx: i,
+                    endIdx: ipEnd,
+                    output: "\(signOut)\(ipOut)",
+                    weight: TaggerWeight.cardinal,
+                    source: "ip"
+                ))
+            }
+
+            i += 1
+        }
+        return out
+    }
+
+    /// Match `digit+ (点 digit+)+` starting at `start`. Returns
+    /// (endIdx, formatted) if at least 3 dot-separated segments found.
+    private static func tryIPForm(chars: [Character],
+                                  start: Int) -> (Int, String)? {
+        let n = chars.count
+        let cnDigitSet = Set(cnDigitClass)
+        var segments: [String] = []
+        var cursor = start
+        while cursor < n {
+            let segStart = cursor
+            while cursor < n && cnDigitSet.contains(chars[cursor]) {
+                cursor += 1
+            }
+            if cursor == segStart { break }
+            segments.append(String(chars[segStart..<cursor]))
+            if cursor >= n || chars[cursor] != "点" { break }
+            cursor += 1
+        }
+        guard segments.count >= 3 else { return nil }
+        // Trim trailing 点 if we consumed it without a following segment.
+        // Walk back: cursor sits right after last segment.
+        let arabicSegs: [String] = segments.compactMap { seg in
+            let digits = seg.compactMap { digitMap[$0] }
+            return digits.count == seg.count ? String(digits) : nil
+        }
+        guard arabicSegs.count == segments.count else { return nil }
+        return (cursor, arabicSegs.joined(separator: "."))
+    }
+
+    /// Parse an integer-side cardinal allowing single digits when
+    /// `enable_0_to_9` is true, else only multi-char (matches WeText
+    /// number / number_exclude_0_to_9 used by Decimal context).
+    static func parseIntFlexible(_ s: String,
+                                 config: ChineseITNConfig) -> String? {
+        if s.count == 1, let ch = s.first, digitChars.contains(ch) {
+            // Decimals always allow single-digit int side (matches WeText
+            // cardinal.py — number includes digits when assembled with
+            // dot, even for number_exclude_0_to_9 path the dot anchor
+            // implies a quantitative read).
+            return digitMap[ch].map(String.init)
+        }
+        return Cardinal.parse(s, enableMillion: config.enableMillion)
+    }
+}

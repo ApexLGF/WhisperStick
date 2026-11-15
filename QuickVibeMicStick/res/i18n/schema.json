@@ -1,0 +1,89 @@
+{
+  "catalogVersion": 1,
+  "status": "integrated-validated",
+  "defaultLocale": "en",
+  "supportedLocales": [
+    "en",
+    "zh-Hans",
+    "zh-Hant"
+  ],
+  "localeIds": {
+    "en": 0,
+    "zh-Hans": 1,
+    "zh-Hant": 2
+  },
+  "sources": [
+    "QuickVibeMicStick/ui_renderer.cpp",
+    "QuickVibeMicStick/QuickVibeMicStick.ino",
+    "QuickVibeHost/QuickVibeHost/DeviceActionMode.swift"
+  ],
+  "formatting": {
+    "placeholderStyle": "printf",
+    "requiredPlaceholderParity": true,
+    "dynamicContentIsNotLocalized": true
+  },
+  "layoutProfiles": {
+    "modalTitle": {
+      "maxWidthPx": 122,
+      "font": "CJK 12px"
+    },
+    "modalBody": {
+      "maxWidthPx": 126,
+      "font": "CJK 12px",
+      "maxLines": 2,
+      "overflow": "wrap"
+    },
+    "modalFooter": {
+      "maxWidthPx": 142,
+      "font": "CJK 12px",
+      "maxLines": 2,
+      "overflow": "wrap"
+    },
+    "actionModeLine": {
+      "maxTransportBytes": 48,
+      "currentSingleLineWidthPx": 126,
+      "maxLines": 2,
+      "lineHeightPx": 12,
+      "wrapPreference": "action boundary, then word boundary, then UTF-8 code point",
+      "overflow": "generation-error",
+      "integrationRequirement": "wrap confirmed copy inside the existing modal; never truncate actions"
+    },
+    "fullWidthTitle": {
+      "maxWidthPx": 166,
+      "font": "CJK 16px"
+    }
+  },
+  "groups": {
+    "basic": "Connection and voice-ready pages",
+    "home": "Session list and empty state",
+    "common": "Reusable control labels",
+    "prompt": "Prompt picker",
+    "edit": "Text editing mode and feedback",
+    "action": "Host-supplied scene modes, including ChatGPT App, custom and music modes",
+    "delete": "Repeat-delete overlay",
+    "ship": "SGM41511 transport/Ship Mode confirmation page",
+    "approval": "Approval request modal",
+    "recording": "Recording page",
+    "recognition": "Speech recognition pages",
+    "permission": "Legacy permission toast"
+  },
+  "invariants": [
+    "QuickVibe",
+    "Claude",
+    "Claude Code",
+    "Codex",
+    "Mac",
+    "API",
+    "REC",
+    "VOICE",
+    "dBFS",
+    "A/B/C/D button names",
+    "PgUp/PgDn"
+  ],
+  "excluded": [
+    "BLE device names and firmware versions",
+    "session, prompt, tool, approval-body and ASR-result content received at runtime",
+    "serial logs and boot diagnostics",
+    "mock session names used by developer test commands"
+  ]
+}

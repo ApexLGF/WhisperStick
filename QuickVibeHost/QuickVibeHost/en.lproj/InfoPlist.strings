@@ -1,0 +1,8 @@
+/* Generated app localization resources. */
+
+"CFBundleDisplayName" = "VE Voice Command Stick";
+"CFBundleName" = "VE Voice Command Stick";
+"NSBluetoothAlwaysUsageDescription" = "VE Voice Command Stick requires Bluetooth permission to connect to VE Voice Command Stick hardware.";
+"NSAppleEventsUsageDescription" = "VE Voice Command Stick needs access to Music to display the current song and artist on the device.";
+"NSInputMonitoringUsageDescription" = "VE Voice Command Stick requires input monitoring permission to receive hardware key events.";
+"NSMicrophoneUsageDescription" = "VE Voice Command Stick requires microphone permission to record and perform speech recognition.";

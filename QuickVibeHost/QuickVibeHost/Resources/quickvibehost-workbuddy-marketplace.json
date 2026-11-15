@@ -1,0 +1,24 @@
+{
+  "name": "quickvibehost-approval",
+  "description": "QuickVibeHost device approval integration for WorkBuddy.",
+  "owner": {
+    "name": "VibeEverything"
+  },
+  "metadata": {
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "quickvibehost-approval",
+      "description": "Routes WorkBuddy approvals to a connected QuickVibe device.",
+      "version": "1.0.0",
+      "source": "./plugin",
+      "category": "productivity",
+      "author": {
+        "name": "VibeEverything"
+      },
+      "license": "Proprietary",
+      "hooks": "./plugin/hooks/hooks.json"
+    }
+  ]
+}

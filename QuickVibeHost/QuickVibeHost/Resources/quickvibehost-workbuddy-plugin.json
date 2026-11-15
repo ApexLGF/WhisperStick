@@ -1,0 +1,15 @@
+{
+  "name": "quickvibehost-approval",
+  "version": "1.0.0",
+  "description": "Routes WorkBuddy approvals to a connected QuickVibe device.",
+  "author": {
+    "name": "VibeEverything"
+  },
+  "license": "Proprietary",
+  "keywords": [
+    "workbuddy",
+    "approval",
+    "quickvibehost"
+  ],
+  "hooks": "./hooks/hooks.json"
+}
